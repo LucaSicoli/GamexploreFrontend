@@ -1,7 +1,18 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-// Acción asincrónica para registrar un usuario
+// Helper functions for managing localStorage
+const saveAuthData = ({ token, user }) => {
+  localStorage.setItem('token', token);
+  localStorage.setItem('user', JSON.stringify(user));
+};
+
+const clearAuthData = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+};
+
+// Async action for user registration
 export const registerUser = createAsyncThunk(
   'auth/registerUser',
   async (formData, { rejectWithValue }) => {
@@ -9,39 +20,35 @@ export const registerUser = createAsyncThunk(
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/register`, formData);
       const { token, user } = response.data;
 
-      // Guarda token, usuario y rol en localStorage
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('userRole', user.role);
+      saveAuthData({ token, user });
 
       return { token, user };
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Error al registrar usuario');
+      const errorMessage = error.response?.data?.message || 'Failed to register user';
+      return rejectWithValue(errorMessage);
     }
   }
 );
 
-// Acción asincrónica para iniciar sesión
+// Async action for user login
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async ({ email, password }, { rejectWithValue }) => {
     try {
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, { email, password });
       const { token, user } = response.data;
-      
-      // Guarda token, usuario y rol en localStorage
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('userRole', user.role);
-      
+
+      saveAuthData({ token, user });
+
       return { token, user };
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Error al iniciar sesión');
+      const errorMessage = error.response?.data?.message || 'Incorrect email or password';
+      return rejectWithValue(errorMessage);
     }
   }
 );
 
-// Acción asincrónica para solicitar restablecimiento de contraseña
+// Async action for password reset request
 export const resetPasswordRequest = createAsyncThunk(
   'auth/resetPasswordRequest',
   async ({ email }, { rejectWithValue }) => {
@@ -49,12 +56,13 @@ export const resetPasswordRequest = createAsyncThunk(
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/reset-password-request`, { email });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Error al solicitar el restablecimiento de contraseña');
+      const errorMessage = error.response?.data?.message || 'Failed to request password reset';
+      return rejectWithValue(errorMessage);
     }
   }
 );
 
-// Acción asincrónica para restablecer la contraseña
+// Async action for resetting password
 export const resetPassword = createAsyncThunk(
   'auth/resetPassword',
   async ({ token, newPassword }, { rejectWithValue }) => {
@@ -62,36 +70,30 @@ export const resetPassword = createAsyncThunk(
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/reset-password`, { token, newPassword });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Error al restablecer la contraseña');
+      const errorMessage = error.response?.data?.message || 'Failed to reset password';
+      return rejectWithValue(errorMessage);
     }
   }
 );
 
-// Slice de autenticación
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
     user: JSON.parse(localStorage.getItem('user')) || null,
     token: localStorage.getItem('token') || null,
-    userRole: localStorage.getItem('userRole') || null,
+    userRole: JSON.parse(localStorage.getItem('user'))?.role || null,
     isAuthenticated: !!localStorage.getItem('token'),
     error: null,
     loading: false,
   },
   reducers: {
-    // Acción para cerrar sesión
     logout: (state) => {
       state.user = null;
       state.token = null;
       state.userRole = null;
       state.isAuthenticated = false;
-
-      // Elimina el token, usuario y rol del localStorage
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('userRole');
+      clearAuthData();
     },
-    // Acción para limpiar errores
     clearError: (state) => {
       state.error = null;
     },
@@ -105,12 +107,13 @@ const authSlice = createSlice({
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
-        state.isAuthenticated = false; 
+        state.token = action.payload.token;
+        state.userRole = action.payload.user.role; // Set userRole directly
+        state.isAuthenticated = true;
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || 'Error al registrar el usuario';
-        state.isAuthenticated = false;
+        state.error = action.payload || 'Registration failed';
       })
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
@@ -120,13 +123,12 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         state.token = action.payload.token;
-        state.userRole = action.payload.user.role;
+        state.userRole = action.payload.user.role; // Set userRole directly
         state.isAuthenticated = true;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || 'Error al iniciar sesión';
-        state.isAuthenticated = false;
+        state.error = action.payload || 'Login failed';
       })
       .addCase(resetPasswordRequest.pending, (state) => {
         state.loading = true;
@@ -137,7 +139,7 @@ const authSlice = createSlice({
       })
       .addCase(resetPasswordRequest.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || 'Error al solicitar el restablecimiento de contraseña';
+        state.error = action.payload || 'Password reset request failed';
       })
       .addCase(resetPassword.pending, (state) => {
         state.loading = true;
@@ -148,7 +150,7 @@ const authSlice = createSlice({
       })
       .addCase(resetPassword.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || 'Error al restablecer la contraseña';
+        state.error = action.payload || 'Password reset failed';
       });
   },
 });

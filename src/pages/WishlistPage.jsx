@@ -17,14 +17,33 @@ import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
+import { useNavigate } from 'react-router-dom';
 
 const WishlistPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const wishlist = useSelector((state) => state.wishlist.items);
   const loading = useSelector((state) => state.wishlist.loading);
   const error = useSelector((state) => state.wishlist.error);
+  const { isAuthenticated, userRole } = useSelector((state) => state.auth);
   const [searchTerm, setSearchTerm] = useState('');
   const scrollRef = useRef(null);
+
+  // Redirect company users
+  useEffect(() => {
+    // Redirect to login if not authenticated or if the user is a company
+    if (!isAuthenticated) {
+      navigate('/login');
+    } else if (userRole === 'empresa') {
+      navigate('/'); // Redirect companies to the homepage
+    }
+  }, [isAuthenticated, userRole, navigate]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(getWishlist());
+    }
+  }, [dispatch, isAuthenticated]);
 
   useEffect(() => {
     dispatch(getWishlist());
@@ -65,13 +84,15 @@ const WishlistPage = () => {
         return;
       }
 
-     dispatch(addToCart({ gameId, quantity: 1 }));
+      dispatch(addToCart({ gameId, quantity: 1 }));
   
     } catch (err) {
       console.error("Error adding to cart:", err);
       alert("Failed to add game to cart.");
     }
   };
+
+  
 
   const filteredWishlist = wishlist.filter((game) =>
     game.name.toLowerCase().includes(searchTerm.toLowerCase())

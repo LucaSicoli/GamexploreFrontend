@@ -8,6 +8,7 @@ const CreateGamePage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { loading, error, successMessage } = useSelector((state) => state.game);
+    const userRole = useSelector((state) => state.auth.userRole); // Get the user's role from Redux
     const [gameData, setGameData] = useState({
         name: '',
         category: [],
@@ -23,6 +24,12 @@ const CreateGamePage = () => {
         language: [],
         platform: [],
     });
+
+    useEffect(() => {
+        if (userRole === 'gamer') {
+            navigate('/home'); // Redirect gamers to home if they try to access this page
+        }
+    }, [userRole, navigate]);
 
     const handleInputChange = (e) => setGameData({ ...gameData, [e.target.name]: e.target.value });
 
@@ -120,7 +127,7 @@ const CreateGamePage = () => {
         if (successMessage) {
             setTimeout(() => {
                 dispatch(clearSuccessMessage());
-                navigate('/login');  
+                navigate('/home');  
             }, 5000);
         }
     }, [error, successMessage, dispatch, navigate]);

@@ -20,25 +20,29 @@ import { Add, Remove, Delete as DeleteIcon, ShoppingCartOutlined as ShoppingCart
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
-// Helper function to truncate the game name
 const truncateName = (name) => {
-  if (name.length > 10) {
-    return `${name.slice(0, 10)}...`;
-  }
-  return name;
+  return name.length > 10 ? `${name.slice(0, 10)}...` : name;
 };
 
 const CartPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { items, totalPrice } = useSelector((state) => state.cart);
-
-  // Detect if the screen is in mobile view
-  const isMobile = useMediaQuery('(max-width:600px)');
+  const { isAuthenticated, userRole } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    dispatch(fetchCart());
-  }, [dispatch]);
+    // Redirect based on authentication and role, or fetch cart if gamer
+    if (!isAuthenticated) {
+      navigate('/login');
+    } else if (userRole === 'empresa') {
+      navigate('/');
+    } else if (userRole === 'gamer') {
+      // Fetch cart data only if user is a gamer and authenticated
+      dispatch(fetchCart());
+    }
+  }, [isAuthenticated, userRole, navigate, dispatch]);
+
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   const handleIncreaseQuantity = (gameId) => {
     dispatch(increaseCartQuantity(gameId));
@@ -55,7 +59,7 @@ const CartPage = () => {
         headers: { Authorization: `Bearer ${token}` },
         data: { gameId },
       });
-      dispatch(fetchCart()); // Refresh the cart after removing an item
+      dispatch(fetchCart());
     } catch (error) {
       console.error('Error removing item:', error);
     }
