@@ -66,10 +66,8 @@ const GameDetails = () => {
       }
   
       // Dispatch the addToCart action with gameId and quantity
-      const resultAction = await dispatch(addToCart({ gameId: game._id, quantity: 1 }));
-      if (addToCart.fulfilled.match(resultAction)) {
-        alert("Game added to cart successfully.");
-      }
+      dispatch(addToCart({ gameId: game._id, quantity: 1 }));
+     
     } catch (err) {
       console.error("Error adding to cart:", err);
       alert("Failed to add game to cart.");

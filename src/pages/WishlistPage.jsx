@@ -65,10 +65,8 @@ const WishlistPage = () => {
         return;
       }
 
-      const resultAction = await dispatch(addToCart({ gameId, quantity: 1 }));
-      if (addToCart.fulfilled.match(resultAction)) {
-    
-      }
+     dispatch(addToCart({ gameId, quantity: 1 }));
+  
     } catch (err) {
       console.error("Error adding to cart:", err);
       alert("Failed to add game to cart.");
