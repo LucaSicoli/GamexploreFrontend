@@ -1,0 +1,28 @@
+body {
+  margin: 0;
+  font-Family: 'Orbitron, sans-serif';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+.MuiFormLabel-root {
+  color: white !important;
+}
+
+.MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+  border-color: white !important;
+}
+
+/* Aplica la inversión de color a la flecha de los selectores */
+.MuiSelect-icon {
+  filter: invert(1);
+}
