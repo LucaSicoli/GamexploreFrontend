@@ -64,21 +64,25 @@ const Navbar = () => {
             <Typography variant="body2" color="inherit" sx={{ fontFamily: 'Orbitron' }}>Inicio</Typography>
           </Box>
 
-          <Box sx={{ textAlign: 'center' }}>
-            <IconButton color="inherit" onClick={() => navigate('/cart')}>
-              <Badge badgeContent={totalItems} color="secondary">
-                <ShoppingCart />
-              </Badge>
-            </IconButton>
-            <Typography variant="body2" color="inherit" sx={{ fontFamily: 'Orbitron' }}>Carrito</Typography>
-          </Box>
-
-          <Box sx={{ textAlign: 'center' }}>
-            <IconButton color="inherit" onClick={() => navigate('/wishlist')}>
-              <Favorite />
-            </IconButton>
-            <Typography variant="body2" color="inherit" sx={{ fontFamily: 'Orbitron' }}>Wishlist</Typography>
-          </Box>
+          {user?.role === 'gamer' && (
+          <>
+            <Box sx={{ textAlign: 'center' }}>
+              <IconButton color="inherit" onClick={() => navigate('/cart')}>
+                <Badge badgeContent={totalItems} color="secondary">
+                  <ShoppingCart />
+                </Badge>
+              </IconButton>
+              <Typography variant="body2" color="inherit" sx={{ fontFamily: 'Orbitron' }}>Carrito</Typography>
+            </Box>
+            
+            <Box sx={{ textAlign: 'center' }}>
+              <IconButton color="inherit" onClick={() => navigate('/wishlist')}>
+                <Favorite />
+              </IconButton>
+              <Typography variant="body2" color="inherit" sx={{ fontFamily: 'Orbitron' }}>Wishlist</Typography>
+            </Box>
+          </>
+          )}
 
           {/* "Add Game" button for companies */}
           {user?.role === 'empresa' && (
@@ -107,7 +111,9 @@ const Navbar = () => {
 
           {/* Profile Dropdown Menu */}
           <Menu anchorEl={anchorEl} open={open} onClose={handleClose} sx={{ mt: '45px' }} anchorOrigin={{ vertical: 'top', horizontal: 'right' }} transformOrigin={{ vertical: 'top', horizontal: 'right' }}>
-            <MenuItem onClick={() => navigate('/profile')}>Perfil</MenuItem>
+            {user?.role === 'empresa' && (
+              <MenuItem onClick={() => navigate('/profile')}>Perfil</MenuItem>
+            )}
             <MenuItem onClick={handleLogout}>Cerrar sesión</MenuItem>
           </Menu>
         </Box>
@@ -120,24 +126,30 @@ const Navbar = () => {
                 <Home sx={{ color: 'white' }} />
                 <ListItemText primary="Inicio" sx={{ color: 'white', marginLeft: 2 }} />
               </ListItem>
-              <ListItem button onClick={() => navigate('/cart')}>
-                <Badge badgeContent={totalItems} color="secondary">
-                  <ShoppingCart sx={{ color: 'white' }} />
-                </Badge>
-                <ListItemText primary="Carrito" sx={{ color: 'white', marginLeft: 2 }} />
-              </ListItem>
-              <ListItem button onClick={() => navigate('/wishlist')}>
-                <Favorite sx={{ color: 'white' }} />
-                <ListItemText primary="Wishlist" sx={{ color: 'white', marginLeft: 2 }} />
-              </ListItem>
-              <ListItem button onClick={() => navigate('/profile')}>
-                {user?.role === 'empresa' && user.logo ? (
-                  <img src={user.logo} alt="Company Logo" style={{ width: '24px', height: '24px', borderRadius: '50%', marginRight: '8px' }} />
-                ) : (
-                  <AccountCircle sx={{ color: 'white' }} />
-                )}
-                <ListItemText primary="Perfil" sx={{ color: 'white', marginLeft: 2 }} />
-              </ListItem>
+              {user?.role === 'gamer' && (
+                <>
+                  <ListItem button onClick={() => navigate('/cart')}>
+                    <Badge badgeContent={totalItems} color="secondary">
+                      <ShoppingCart sx={{ color: 'white' }} />
+                    </Badge>
+                    <ListItemText primary="Carrito" sx={{ color: 'white', marginLeft: 2 }} />
+                  </ListItem>
+                  <ListItem button onClick={() => navigate('/wishlist')}>
+                    <Favorite sx={{ color: 'white' }} />
+                    <ListItemText primary="Wishlist" sx={{ color: 'white', marginLeft: 2 }} />
+                  </ListItem>
+                </>
+              )}
+              {user?.role === 'empresa' && (
+                <ListItem button onClick={() => navigate('/profile')}>
+                  {user.logo ? (
+                    <img src={user.logo} alt="Company Logo" style={{ width: '24px', height: '24px', borderRadius: '50%', marginRight: '8px' }} />
+                  ) : (
+                    <AccountCircle sx={{ color: 'white' }} />
+                  )}
+                  <ListItemText primary="Perfil" sx={{ color: 'white', marginLeft: 2 }} />
+                </ListItem>
+              )}
               <ListItem button onClick={handleLogout}>
                 <Logout sx={{ color: 'white' }} />
                 <ListItemText primary="Cerrar sesión" sx={{ color: 'white', marginLeft: 2 }} />

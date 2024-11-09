@@ -1,7 +1,7 @@
 // src/pages/GameDetails.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import {
   Container,
@@ -39,6 +39,7 @@ const GameDetails = () => {
   const [newComment, setNewComment] = useState('');
   const [newRating, setNewRating] = useState(0);
   const [visibleCommentsCount, setVisibleCommentsCount] = useState(9);
+  const user = useSelector((state) => state.auth.user);
 
   useEffect(() => {
     const fetchGameDetails = async () => {
@@ -146,6 +147,8 @@ const GameDetails = () => {
     return <Typography>Cargando...</Typography>;
   }
 
+  console.log(user);
+
   return (
     <>
       <Navbar />
@@ -198,8 +201,8 @@ const GameDetails = () => {
                 </Typography>
               </Box>
             </Box>
-
-            <Box display="flex" gap={2} mt={2} mb={2}>
+            {user.role === "gamer" && (
+              <Box display="flex" gap={2} mt={2} mb={2}>
               <Button
                 variant="contained"
                 color="primary"
@@ -213,6 +216,8 @@ const GameDetails = () => {
               </Button>
 
             </Box>
+            )}
+            
 
             <Card
               sx={{

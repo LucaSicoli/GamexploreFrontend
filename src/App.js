@@ -10,6 +10,7 @@ import CreateGamePage from './pages/CreateGamePage';
 import GameDetails from './pages/GameDetails';
 import CartPage from './pages/CartPage';
 import WishlistPage from './pages/WishlistPage';
+import ProfilePage from './pages/Profile';
 
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
         <Route path="/game/:gameId" element={<GameDetails />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/wishlist" element={<WishlistPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
 
       </Routes>
     </Router>
