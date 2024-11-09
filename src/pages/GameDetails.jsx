@@ -1,7 +1,7 @@
 // src/pages/GameDetails.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import {
   Container,
@@ -39,6 +39,7 @@ const GameDetails = () => {
   const [newComment, setNewComment] = useState('');
   const [newRating, setNewRating] = useState(0);
   const [visibleCommentsCount, setVisibleCommentsCount] = useState(9);
+  const { userRole } = useSelector((state) => state.auth); 
 
   useEffect(() => {
     const fetchGameDetails = async () => {
@@ -57,24 +58,6 @@ const GameDetails = () => {
     fetchGameDetails();
   }, [gameId]);
 
-  const handleAddToCart = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert("User is not authenticated.");
-        return;
-      }
-  
-      // Dispatch the addToCart action with gameId and quantity
-      dispatch(addToCart({ gameId: game._id, quantity: 1 }));
-     
-    } catch (err) {
-      console.error("Error adding to cart:", err);
-      alert("Failed to add game to cart.");
-    }
-  };
-  
-  
 
   const handleAddToWishlist = async () => {
     try {
@@ -200,18 +183,21 @@ const GameDetails = () => {
             </Box>
 
             <Box display="flex" gap={2} mt={2} mb={2}>
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<ShoppingCartIcon />}
-                onClick={handleAddToCart}
-              >
+              {userRole !== 'empresa' && (
+                <>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<ShoppingCartIcon />}
+                    onClick={() => dispatch(addToCart({ gameId: game._id, quantity: 1 }))}
+                  >
                 Añadir al carrito
               </Button>
               <Button variant="contained" color="secondary" startIcon={<FavoriteIcon />} onClick={handleAddToWishlist}>
                 Favorito
               </Button>
-
+              </>
+              )}
             </Box>
 
             <Card

@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCart, increaseCartQuantity, decreaseCartQuantity, clearCart } from '../redux/cartSlice';
-import axios from 'axios';
+import { fetchCart, increaseCartQuantity, removeFromCart, decreaseCartQuantity, clearCart } from '../redux/cartSlice';
 import {
   Box,
   Typography,
@@ -52,17 +51,8 @@ const CartPage = () => {
     dispatch(decreaseCartQuantity(gameId));
   };
 
-  const handleRemoveItem = async (gameId) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${process.env.REACT_APP_API_URL}/cart/remove`, {
-        headers: { Authorization: `Bearer ${token}` },
-        data: { gameId },
-      });
-      dispatch(fetchCart());
-    } catch (error) {
-      console.error('Error removing item:', error);
-    }
+  const handleRemoveItem = (gameId) => {
+    dispatch(removeFromCart(gameId));
   };
 
   const handleClearCart = async () => {

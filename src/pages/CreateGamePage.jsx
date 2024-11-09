@@ -26,10 +26,12 @@ const CreateGamePage = () => {
     });
 
     useEffect(() => {
-        if (userRole === 'gamer') {
-            navigate('/home'); // Redirect gamers to home if they try to access this page
+        // Verificar si el usuario no está autenticado o si su rol es 'gamer'
+        if (!userRole || userRole === 'gamer') {
+            navigate('/login'); // Redirigir al login si no está autenticado o no tiene el rol adecuado
         }
     }, [userRole, navigate]);
+    
 
     const handleInputChange = (e) => setGameData({ ...gameData, [e.target.name]: e.target.value });
 
