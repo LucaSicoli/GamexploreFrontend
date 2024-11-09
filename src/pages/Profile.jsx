@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
 import { 
-  Box, Typography, Card, CardContent, Avatar, IconButton, Menu, MenuItem, Drawer, Stack,
-  TextField, InputAdornment 
+  Box, Typography, Card, CardContent, IconButton, Menu, MenuItem, Drawer, Stack,
+  TextField, InputAdornment, CardMedia
 } from '@mui/material';
 import { MoreVert, Search as SearchIcon, FilterList as FilterListIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -10,62 +12,16 @@ import FilterComponent from '../components/Filter';
 import StarIcon from '@mui/icons-material/Star';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 
-const mockGamesData = [
-    {
-        id: 1,
-        title: "FIFA 16",
-        publicationDate: "18/03/2015",
-        rating: 4.07,
-        reviews: 709,
-        views: 12990,
-        wishlist: 2100,
-        purchases: 3440,
-        conversionRate: "25.71%",
-        status: "Publicado",
-    },
-    {
-        id: 2,
-        title: "FIFA 17",
-        publicationDate: "01/09/2022",
-        rating: 4.22,
-        reviews: 838,
-        views: 11754,
-        wishlist: 1099,
-        purchases: 809,
-        conversionRate: "14.52%",
-        status: "Despublicado",
-    },
-    {
-        id: 3,
-        title: "FIFA 18",
-        publicationDate: "04/09/2017",
-        rating: 3.90,
-        reviews: 1003,
-        views: 24981,
-        wishlist: 391,
-        purchases: 8505,
-        conversionRate: "22.75%",
-        status: "Publicado",
-    },
-    {
-        id: 4,
-        title: "NBA2K20",
-        publicationDate: "15/10/2019",
-        rating: 4.44,
-        reviews: 2328,
-        views: 98761,
-        wishlist: 5012,
-        purchases: 12001,
-        conversionRate: "12.19%",
-        status: "Publicado",
-    },
-];
+
 
 const ProfilePage = () => {
+    const user = useSelector((state) => state.auth.user);
+    const developerId = user.id;
     const [games, setGames] = useState([]);
+    const [error, setError] = useState(null);
     const [anchorEl, setAnchorEl] = useState(null);
     const [selectedGame, setSelectedGame] = useState(null);
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -76,12 +32,25 @@ const ProfilePage = () => {
         search: '',
     });
 
+    useEffect(() => {
+        const fetchGameByDeveloper = async () => {
+          try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(
+              `${process.env.REACT_APP_API_URL}/games/developer/${developerId}`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setGames(response.data);
+            console.log(response.data);
+          } catch (err) {
+            setError('Error al cargar los detalles del juego');
+          }
+        };
+        fetchGameByDeveloper();
+      }, [developerId]);
+
     const navigate = useNavigate();
 
-    useEffect(() => {
-        // Simular llamada al backend para obtener los datos de los juegos
-        setGames(mockGamesData);
-    }, []);
 
     const handleMenuClick = (event, game) => {
         setAnchorEl(event.currentTarget);
@@ -132,7 +101,6 @@ const ProfilePage = () => {
             }}
         >
             <Navbar />
-
             <Box
                 sx={{
                     display: 'flex',
@@ -224,16 +192,16 @@ const ProfilePage = () => {
                             <Card key={game.id} sx={{ display: 'flex', marginBottom: '1rem', backgroundColor: 'rgba(255, 255, 255, 0.1)', color: 'white', justifyContent: 'space-between' }}>
                                 <Box sx={{ display: 'flex', flexDirection: 'row'}}>
                                     <Box>
-                                        <Avatar
-                                            variant="square"
-                                            src={`/path/to/game/image/${game.id}.jpg`} // Imagen del juego
-                                            alt={game.title}
-                                            sx={{ width: 90, height: 128, margin: '1rem', borderRadius: '5px' }}
-                                        />
+                                    <CardMedia
+                                        component="img"
+                                        image={game.imageUrl}
+                                        alt={game.name}
+                                        sx={{ width: '80px', height: "120px", borderRadius: '10px', marginLeft: "10px", marginTop: "20px" }}
+                                    />
                                     </Box>
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                         <CardContent sx={{ flex: 1 }}>
-                                            <Typography variant="h4" sx={{fontWeight: 'bold'}}>{game.title}</Typography>
+                                            <Typography variant="h4" sx={{fontWeight: 'bold'}}>{game.name}</Typography>
                                             <Typography variant="body2" color="gray">Publicado el {game.publicationDate}</Typography>
                                             <Typography variant="body1" sx={{ marginTop: '0.5rem' }}>
                                             <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: '20px' }}>
@@ -242,7 +210,7 @@ const ProfilePage = () => {
                                                 {game.rating}
                                             </Typography>
                                             <Typography variant="body2" sx={{ color: 'gray', fontSize: '0.8rem', position: 'relative', top: '7px' }}>
-                                                {game.reviews} reseñas
+                                                {game.ratingCount} reseñas
                                             </Typography>
                                             </Stack>
                                             </Typography>
@@ -255,28 +223,28 @@ const ProfilePage = () => {
                                             <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
                                                 <VisibilityIcon sx={{ mr: '8px' }} /> {/* Espacio entre icono y texto */}
                                                 <Typography variant="body1" sx={{ marginRight: '4px', marginTop: '4px' }}>
-                                                Visualizaciones: <strong>{game.views}</strong>
+                                                Visualizaciones: <strong>{game.stats.views}</strong>
                                                 </Typography>
                                             </Typography>
 
                                             <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', mt: '4px' }}>
                                                 <FavoriteIcon sx={{ mr: '8px' }} /> {/* Espacio entre icono y texto */}
                                                 <Typography variant="body1" sx={{ marginRight: '4px', marginTop: '4px' }}>
-                                                Wishlist: <strong>{game.wishlist}</strong>
+                                                Wishlist: <strong>{game.stats.wishlist}</strong>
                                                 </Typography>
                                             </Typography>
 
                                             <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', mt: '4px' }}>
-                                                <ShoppingCartIcon sx={{ mr: '8px' }} /> {/* Espacio entre icono y texto */}
+                                                <AttachMoneyIcon sx={{ mr: '8px' }} /> {/* Espacio entre icono y texto */}
                                                 <Typography variant="body1" sx={{ marginRight: '4px', marginTop: '4px' }}>
-                                                Compras: <strong>{game.purchases}</strong>
+                                                Compras: <strong>{game.stats.buys}</strong>
                                                 </Typography>
                                             </Typography>
 
                                             <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', mt: '4px' }}>
                                                 <LeaderboardIcon sx={{ mr: '8px' }} /> {/* Espacio entre icono y texto */}
                                                 <Typography variant="body1" sx={{ marginRight: '4px', marginTop: '4px' }}>
-                                                Tasa de conversión: <strong>{game.conversionRate}</strong>
+                                                Tasa de conversión: <strong>{game.stats.conversionRate}</strong>
                                                 </Typography>
                                             </Typography>
                                         </Stack>
