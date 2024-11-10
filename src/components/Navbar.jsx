@@ -113,60 +113,99 @@ const Navbar = () => {
           </Box>
 
           {/* Profile Dropdown Menu */}
-          <Menu anchorEl={anchorEl} open={open} onClose={handleClose} sx={{ mt: '45px' }} anchorOrigin={{ vertical: 'top', horizontal: 'right' }} transformOrigin={{ vertical: 'top', horizontal: 'right' }}>
-            <MenuItem onClick={() => navigate('/profile')}>Perfil</MenuItem>
-            <MenuItem onClick={handleLogout}>Cerrar sesión</MenuItem>
-          </Menu>
+          {/* Profile Dropdown Menu */}
+<Menu
+  anchorEl={anchorEl}
+  open={open}
+  onClose={handleClose}
+  sx={{ mt: '45px' }}
+  anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+>
+  {/* Only show "Perfil" option for company users */}
+  {user?.role === 'empresa' && (
+    <MenuItem onClick={() => navigate('/profile')}>Perfil</MenuItem>
+  )}
+  <MenuItem onClick={handleLogout}>Cerrar sesión</MenuItem>
+</Menu>
+
         </Box>
 
         {/* Drawer for Small Screens */}
-        <Drawer anchor="right" open={isDrawerOpen} onClose={toggleDrawer(false)} sx={{ '& .MuiDrawer-paper': { backgroundColor: '#1e1e1e', color: 'white', width: 250 } }}>
-          <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
-            <List>
-              <ListItem button onClick={() => navigate('/')}>
-                <Home sx={{ color: 'white' }} />
-                <ListItemText primary="Inicio" sx={{ color: 'white', marginLeft: 2 }} />
-              </ListItem>
+        {/* Drawer for Small Screens */}
+<Drawer
+  anchor="right"
+  open={isDrawerOpen}
+  onClose={toggleDrawer(false)}
+  sx={{
+    '& .MuiDrawer-paper': {
+      backgroundColor: '#1e1e1e',
+      color: 'white',
+      width: 250,
+    },
+  }}
+>
+  <Box
+    sx={{ width: 250 }}
+    role="presentation"
+    onClick={toggleDrawer(false)}
+    onKeyDown={toggleDrawer(false)}
+  >
+    <List>
+      <ListItem button onClick={() => navigate('/')}>
+        <Home sx={{ color: 'white' }} />
+        <ListItemText primary="Inicio" sx={{ color: 'white', marginLeft: 2 }} />
+      </ListItem>
 
-              {/* Cart and Wishlist Only for Non-Company Users in Drawer */}
-              {user?.role !== 'empresa' && (
-                <>
-                  <ListItem button onClick={() => navigate('/cart')}>
-                    <Badge badgeContent={totalItems} color="secondary">
-                      <ShoppingCart sx={{ color: 'white' }} />
-                    </Badge>
-                    <ListItemText primary="Carrito" sx={{ color: 'white', marginLeft: 2 }} />
-                  </ListItem>
-                  <ListItem button onClick={() => navigate('/wishlist')}>
-                    <Favorite sx={{ color: 'white' }} />
-                    <ListItemText primary="Wishlist" sx={{ color: 'white', marginLeft: 2 }} />
-                  </ListItem>
-                </>
-              )}
+      {/* Cart and Wishlist Only for Non-Company Users in Drawer */}
+      {user?.role !== 'empresa' && (
+        <>
+          <ListItem button onClick={() => navigate('/cart')}>
+            <Badge badgeContent={totalItems} color="secondary">
+              <ShoppingCart sx={{ color: 'white' }} />
+            </Badge>
+            <ListItemText primary="Carrito" sx={{ color: 'white', marginLeft: 2 }} />
+          </ListItem>
+          <ListItem button onClick={() => navigate('/wishlist')}>
+            <Favorite sx={{ color: 'white' }} />
+            <ListItemText primary="Wishlist" sx={{ color: 'white', marginLeft: 2 }} />
+          </ListItem>
+        </>
+      )}
 
-              {/* "Add Game" button for companies in Drawer */}
-              {user?.role === 'empresa' && (
-                <ListItem button onClick={() => navigate('/create-game')}>
-                  <AddBox sx={{ color: 'white' }} />
-                  <ListItemText primary="Add Game" sx={{ color: 'white', marginLeft: 2 }} />
-                </ListItem>
-              )}
+      {/* "Add Game" button for companies in Drawer */}
+      {user?.role === 'empresa' && (
+        <ListItem button onClick={() => navigate('/create-game')}>
+          <AddBox sx={{ color: 'white' }} />
+          <ListItemText primary="Add Game" sx={{ color: 'white', marginLeft: 2 }} />
+        </ListItem>
+      )}
 
-              <ListItem button onClick={() => navigate('/profile')}>
-                {user?.role === 'empresa' && user.logo ? (
-                  <img src={user.logo} alt="Company Logo" style={{ width: '24px', height: '24px', borderRadius: '50%', marginRight: '8px' }} />
-                ) : (
-                  <AccountCircle sx={{ color: 'white' }} />
-                )}
-                <ListItemText primary="Perfil" sx={{ color: 'white', marginLeft: 2 }} />
-              </ListItem>
-              <ListItem button onClick={handleLogout}>
-                <Logout sx={{ color: 'white' }} />
-                <ListItemText primary="Cerrar sesión" sx={{ color: 'white', marginLeft: 2 }} />
-              </ListItem>
-            </List>
-          </Box>
-        </Drawer>
+      {/* Only show "Perfil" option for company users */}
+      {user?.role === 'empresa' && (
+        <ListItem button onClick={() => navigate('/profile')}>
+          {user.logo ? (
+            <img
+              src={user.logo}
+              alt="Company Logo"
+              style={{ width: '24px', height: '24px', borderRadius: '50%', marginRight: '8px' }}
+            />
+          ) : (
+            <AccountCircle sx={{ color: 'white' }} />
+          )}
+          <ListItemText primary="Perfil" sx={{ color: 'white', marginLeft: 2 }} />
+        </ListItem>
+      )}
+
+      {/* Logout option for all users */}
+      <ListItem button onClick={handleLogout}>
+        <Logout sx={{ color: 'white' }} />
+        <ListItemText primary="Cerrar sesión" sx={{ color: 'white', marginLeft: 2 }} />
+      </ListItem>
+    </List>
+  </Box>
+</Drawer>
+
       </Toolbar>
     </AppBar>
   );
