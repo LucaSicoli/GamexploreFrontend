@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCart, increaseCartQuantity, decreaseCartQuantity, clearCart } from '../redux/cartSlice';
-import axios from 'axios';
+import { fetchCart, increaseCartQuantity, removeFromCart, decreaseCartQuantity, clearCart } from '../redux/cartSlice';
 import {
   Box,
   Typography,
@@ -20,25 +19,29 @@ import { Add, Remove, Delete as DeleteIcon, ShoppingCartOutlined as ShoppingCart
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
-// Helper function to truncate the game name
 const truncateName = (name) => {
-  if (name.length > 10) {
-    return `${name.slice(0, 10)}...`;
-  }
-  return name;
+  return name.length > 10 ? `${name.slice(0, 10)}...` : name;
 };
 
 const CartPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { items, totalPrice } = useSelector((state) => state.cart);
-
-  // Detect if the screen is in mobile view
-  const isMobile = useMediaQuery('(max-width:600px)');
+  const { isAuthenticated, userRole } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    dispatch(fetchCart());
-  }, [dispatch]);
+    // Redirect based on authentication and role, or fetch cart if gamer
+    if (!isAuthenticated) {
+      navigate('/login');
+    } else if (userRole === 'empresa') {
+      navigate('/');
+    } else if (userRole === 'gamer') {
+      // Fetch cart data only if user is a gamer and authenticated
+      dispatch(fetchCart());
+    }
+  }, [isAuthenticated, userRole, navigate, dispatch]);
+
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   const handleIncreaseQuantity = (gameId) => {
     dispatch(increaseCartQuantity(gameId));
@@ -48,17 +51,8 @@ const CartPage = () => {
     dispatch(decreaseCartQuantity(gameId));
   };
 
-  const handleRemoveItem = async (gameId) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${process.env.REACT_APP_API_URL}/cart/remove`, {
-        headers: { Authorization: `Bearer ${token}` },
-        data: { gameId },
-      });
-      dispatch(fetchCart()); // Refresh the cart after removing an item
-    } catch (error) {
-      console.error('Error removing item:', error);
-    }
+  const handleRemoveItem = (gameId) => {
+    dispatch(removeFromCart(gameId));
   };
 
   const handleClearCart = async () => {

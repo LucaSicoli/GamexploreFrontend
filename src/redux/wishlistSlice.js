@@ -1,3 +1,4 @@
+// src/redux/wishlistSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
@@ -27,21 +28,38 @@ export const removeFromWishlist = createAsyncThunk('wishlist/removeFromWishlist'
 });
 
 export const addToWishlist = createAsyncThunk('wishlist/addToWishlist', async ({ gameName }, { rejectWithValue }) => {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await axios.post(`${process.env.REACT_APP_API_URL}/wishlist`, { name: gameName }, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        return response.data; // Retorna el mensaje
-    } catch (error) {
-        return rejectWithValue(error.response?.data || 'Error al agregar el juego a la wishlist');
-    }
+  try {
+    const token = localStorage.getItem('token');
+    const response = await axios.post(`${process.env.REACT_APP_API_URL}/wishlist`, { name: gameName }, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data; // Retorna el mensaje
+  } catch (error) {
+    return rejectWithValue(error.response?.data || 'Error al agregar el juego a la wishlist');
+  }
 });
 
+// Nueva acción para obtener el número de usuarios que tienen un juego en su wishlist
+export const fetchWishlistCountForGame = createAsyncThunk(
+  'wishlist/fetchWishlistCountForGame',
+  async (gameId, { rejectWithValue }) => {
+      try {
+          const response = await axios.get(`${process.env.REACT_APP_API_URL}/wishlist/${gameId}/count`);
+          return { gameId, count: response.data.count };
+      } catch (error) {
+          return rejectWithValue(error.response?.data || 'Error fetching wishlist count');
+      }
+  }
+);
 
 const wishlistSlice = createSlice({
   name: 'wishlist',
-  initialState: { items: [], loading: false, error: null },
+  initialState: {
+    items: [],
+    counts: {}, // Almacena los conteos de wishlist por gameId
+    loading: false,
+    error: null,
+  },
   reducers: {},
   extraReducers: (builder) => {
     builder
@@ -61,7 +79,14 @@ const wishlistSlice = createSlice({
         state.items = state.items.filter((game) => game._id !== action.payload); // Usa _id
       })
       .addCase(addToWishlist.fulfilled, (state, action) => {
-       
+        // Agrega el juego a la lista de items si se agregó correctamente
+      })
+      .addCase(fetchWishlistCountForGame.fulfilled, (state, action) => {
+        const { gameId, count } = action.payload;
+        state.counts[gameId] = count;
+      })
+      .addCase(fetchWishlistCountForGame.rejected, (state, action) => {
+        state.error = action.payload;
       });
   },
 });

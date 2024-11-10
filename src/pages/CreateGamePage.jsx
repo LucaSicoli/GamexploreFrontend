@@ -9,6 +9,7 @@ const CreateGamePage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { loading, error, successMessage } = useSelector((state) => state.game);
+    const userRole = useSelector((state) => state.auth.userRole); // Get the user's role from Redux
     const [gameData, setGameData] = useState({
         name: '',
         category: [],
@@ -24,6 +25,14 @@ const CreateGamePage = () => {
         language: [],
         platform: [],
     });
+
+    useEffect(() => {
+        // Verificar si el usuario no está autenticado o si su rol es 'gamer'
+        if (!userRole || userRole === 'gamer') {
+            navigate('/login'); // Redirigir al login si no está autenticado o no tiene el rol adecuado
+        }
+    }, [userRole, navigate]);
+    
 
     const handleInputChange = (e) => setGameData({ ...gameData, [e.target.name]: e.target.value });
 
@@ -121,7 +130,7 @@ const CreateGamePage = () => {
         if (successMessage) {
             setTimeout(() => {
                 dispatch(clearSuccessMessage());
-                navigate('/login');  
+                navigate('/home');  
             }, 5000);
         }
     }, [error, successMessage, dispatch, navigate]);
@@ -129,9 +138,9 @@ const CreateGamePage = () => {
     return (
         <>
             <Navbar />
-            <Box sx={{ display: 'flex', justifyContent: 'center', padding: '2rem', background: 'linear-gradient(0deg, #062A56 0%, #03152B 100%)', minHeight: '100vh' }}>
-                <Box sx={{ width: '100%', maxWidth: '700px', backgroundColor: 'rgba(202, 202, 202, 0.12)', padding: '2rem', borderRadius: '10px', color: 'white' }}>
-                    <Typography variant="h4" sx={{ mb: 2, textAlign: 'center', fontFamily:'orbitron' }}>Create Game</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'center', padding: '2rem', background: 'linear-gradient(0deg, #062A56 0%, #03152B 100%)', minHeight: '100vh' }}>
+            <Box sx={{ width: '100%', maxWidth: '700px', backgroundColor: 'rgba(202, 202, 202, 0.12)', padding: '2rem', borderRadius: '10px', color: 'white' }}>
+                <Typography variant="h4" sx={{ mb: 2, textAlign: 'center', fontFamily:'orbitron' }}>Create Game</Typography>
 
                     <Typography variant="h6" sx={{ mt: 2 }}>Datos del videojuego</Typography>
                     <TextField
@@ -297,7 +306,9 @@ const CreateGamePage = () => {
                     {successMessage && <Typography color="success" sx={{ mt: 2 }}>{successMessage}</Typography>}
                 </Box>
             </Box>
-        </> 
+       
+
+        </>
     );
 };
 

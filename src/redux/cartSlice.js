@@ -20,7 +20,7 @@ export const addToCart = createAsyncThunk('cart/addToCart', async ({ gameId, qua
   try {
     const token = localStorage.getItem('token');
     const response = await axios.post(
-      `${process.env.REACT_APP_API_URL}/cart/add`,
+      `${process.env.REACT_APP_API_URL}/cart/items`,
       { gameId, quantity },
       {
         headers: { Authorization: `Bearer ${token}` },
@@ -37,18 +37,19 @@ export const addToCart = createAsyncThunk('cart/addToCart', async ({ gameId, qua
 });
 
 // Thunk to remove an item from the cart
-export const removeFromCart = createAsyncThunk('cart/removeFromCart', async (gameId, { rejectWithValue }) => {
+export const removeFromCart = createAsyncThunk('cart/removeFromCart', async (gameId, { getState, rejectWithValue }) => {
   try {
-    const token = localStorage.getItem('token');
-    const response = await axios.delete(`${process.env.REACT_APP_API_URL}/cart/remove`, {
+    const token = getState().auth.token;
+    const response = await axios.delete(`${process.env.REACT_APP_API_URL}/cart/items`, {
       headers: { Authorization: `Bearer ${token}` },
-      data: { gameId },
+      data: { gameId },  // Ensure the gameId is being sent correctly
     });
     return response.data.cart;
   } catch (error) {
     return rejectWithValue(error.response?.data || { message: "Failed to remove item from cart" });
   }
 });
+
 
 // Thunk to increase quantity
 export const increaseCartQuantity = createAsyncThunk('cart/increaseQuantity', async (gameId, { rejectWithValue }) => {
@@ -81,7 +82,7 @@ export const increaseCartQuantity = createAsyncThunk('cart/increaseQuantity', as
 export const clearCart = createAsyncThunk('cart/clearCart', async (_, { rejectWithValue }) => {
   try {
     const token = localStorage.getItem('token');
-    await axios.post(`${process.env.REACT_APP_API_URL}/cart/clear`, {}, {
+    await axios.post(`${process.env.REACT_APP_API_URL}/cart`, {}, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return { items: [], totalItems: 0, totalPrice: 0 }; // Reset cart state
