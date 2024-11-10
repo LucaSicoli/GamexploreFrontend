@@ -3,6 +3,7 @@ import { TextField, Button, Typography, Box, FormControl, InputLabel, Select, Me
 import { useDispatch, useSelector } from 'react-redux';
 import { createGame, clearError, clearSuccessMessage } from '../redux/gameSlice';
 import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 
 const CreateGamePage = () => {
     const dispatch = useDispatch();
@@ -135,6 +136,8 @@ const CreateGamePage = () => {
     }, [error, successMessage, dispatch, navigate]);
 
     return (
+        <>
+            <Navbar />
         <Box sx={{ display: 'flex', justifyContent: 'center', padding: '2rem', background: 'linear-gradient(0deg, #062A56 0%, #03152B 100%)', minHeight: '100vh' }}>
             <Box sx={{ width: '100%', maxWidth: '700px', backgroundColor: 'rgba(202, 202, 202, 0.12)', padding: '2rem', borderRadius: '10px', color: 'white' }}>
                 <Typography variant="h4" sx={{ mb: 2, textAlign: 'center', fontFamily:'orbitron' }}>Create Game</Typography>
@@ -303,6 +306,8 @@ const CreateGamePage = () => {
                 {successMessage && <Typography color="success" sx={{ mt: 2 }}>{successMessage}</Typography>}
             </Box>
         </Box>
+
+        </>
     );
 };
 

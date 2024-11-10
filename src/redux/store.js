@@ -6,6 +6,7 @@ import cartReducer from './cartSlice';
 import wishlistReducer from './wishlistSlice';
 import filterReducer from './filterSlice'; // Import the new filterSlice
 import userReducer from './userSlice';
+import orderReducer from './orderSlice'; // Import the new orderSlice
 
 const store = configureStore({
   reducer: {
@@ -15,6 +16,7 @@ const store = configureStore({
     wishlist: wishlistReducer,
     filter: filterReducer, // Add filterSlice to the store
     user: userReducer,
+    order: orderReducer, // Add orderSlice to the store
   },
 });
 
