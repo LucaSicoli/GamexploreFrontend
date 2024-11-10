@@ -1,4 +1,3 @@
-// src/redux/gameSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
@@ -38,6 +37,25 @@ export const fetchCompanyGames = createAsyncThunk(
         }
     }
 );
+
+// Acción asíncrona para obtener el conteo de compras de cada juego
+export const fetchGamesPurchasesCount = createAsyncThunk(
+    'game/fetchGamesPurchasesCount',
+    async (_, { rejectWithValue }) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/games/purchases-count`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data || 'Error fetching purchases count');
+        }
+    }
+);
+
 
 // Acción asíncrona para alternar el estado de publicación de un juego
 export const togglePublishGame = createAsyncThunk(
@@ -140,6 +158,25 @@ const gameSlice = createSlice({
             .addCase(fetchCompanyGames.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload?.message || 'Error fetching company games.';
+            })
+
+            // Manejo de fetchGamesPurchasesCount
+            .addCase(fetchGamesPurchasesCount.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchGamesPurchasesCount.fulfilled, (state, action) => {
+                state.loading = false;
+                const purchasesData = action.payload;
+                
+                // Actualiza la información de compras en companyGames
+                state.companyGames = state.companyGames.map((game) => {
+                    const purchaseInfo = purchasesData.find((item) => item._id === game._id);
+                    return { ...game, purchases: purchaseInfo ? purchaseInfo.purchases : 0 };
+                });
+            })
+            .addCase(fetchGamesPurchasesCount.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload?.message || 'Error fetching games purchases count.';
             })
 
             // Manejo de togglePublishGame
