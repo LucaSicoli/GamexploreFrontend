@@ -4,22 +4,8 @@ import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import {
-  Container,
-  Typography,
-  Box,
-  Card,
-  CardMedia,
-  Chip,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
-  Paper,
-  Rating,
-  Grid,
-  TextField,
+  Container,Typography,Box,Card,CardMedia,Chip,Button,Table,TableBody,TableCell,
+  TableContainer,TableRow,Paper,Rating,Grid,TextField,
 } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -43,20 +29,28 @@ const GameDetails = () => {
 
   useEffect(() => {
     const fetchGameDetails = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/games/${gameId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setGame(response.data);
-        setComments(response.data.comments || []);
-      } catch (err) {
-        setError('Error al cargar los detalles del juego');
-      }
+        try {
+            const token = localStorage.getItem('token');
+            
+            // Incrementar visualizaciones
+            await axios.put(`${process.env.REACT_APP_API_URL}/games/${gameId}/views`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            // Obtener detalles del juego
+            const response = await axios.get(
+                `${process.env.REACT_APP_API_URL}/games/${gameId}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            
+            setGame(response.data);
+        } catch (err) {
+            setError('Error al cargar los detalles del juego');
+        }
     };
+
     fetchGameDetails();
-  }, [gameId]);
+}, [gameId]);
 
 
   const handleAddToWishlist = async () => {

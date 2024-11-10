@@ -21,7 +21,7 @@ const RegisterPage = () => {
   useEffect(() => {
     if (registrationSuccess) {
       setTimeout(() => {
-        navigate('/login');
+        navigate('/');
       }, 3000); // Redirigir después de 3 segundos
     }
   }, [registrationSuccess, navigate]);
@@ -320,7 +320,7 @@ const RegisterPage = () => {
             </Button>
             <Link
               onClick={() => {
-                dispatch(clearError()); navigate('/login');
+                dispatch(clearError()); navigate('/');
               }}
               underline="hover"
               style={{ color: '#CACACA', cursor: 'pointer' }}

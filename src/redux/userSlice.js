@@ -2,27 +2,20 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-// Thunk para obtener los datos del usuario y sus juegos
-export const fetchUserData = createAsyncThunk('user/fetchUserData', async (_, { rejectWithValue }) => {
+// Thunk para obtener los datos detallados de los juegos del usuario
+export const fetchUserGames = createAsyncThunk('user/fetchUserGames', async (_, { rejectWithValue }) => {
   try {
-    const token = localStorage.getItem('token'); // Usando el token del localStorage si es necesario
-    const response = await axios.get(`${process.env.REACT_APP_API_URL}/users`, {
+    const token = localStorage.getItem('token');
+    const userId = JSON.parse(localStorage.getItem('user')).id;
+
+    const response = await axios.get(`${process.env.REACT_APP_API_URL}/users/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    
-    // Si el backend no incluye los datos completos de los juegos, realiza solicitudes adicionales para obtenerlos
-    const gameIds = response.data.games || [];
-    const games = await Promise.all(
-      gameIds.map(gameId => 
-        axios.get(`${process.env.REACT_APP_API_URL}/games/${gameId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }).then(res => res.data)
-      )
-    );
 
-    return { user: response.data, games }; // Incluye los juegos en el payload
+    // Devuelve los juegos completos con sus detalles y comentarios
+    return { user: response.data, games: response.data.games };
   } catch (error) {
     return rejectWithValue(error.response?.data || 'Error al obtener los datos del usuario');
   }
@@ -32,7 +25,7 @@ const userSlice = createSlice({
   name: 'user',
   initialState: {
     user: null,
-    games: [], // Almacena los juegos del usuario aquí
+    games: [],
     loading: false,
     error: null,
   },
@@ -45,16 +38,16 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUserData.pending, (state) => {
+      .addCase(fetchUserGames.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchUserData.fulfilled, (state, action) => {
+      .addCase(fetchUserGames.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
-        state.games = action.payload.games; // Guarda los juegos obtenidos
+        state.games = action.payload.games;
       })
-      .addCase(fetchUserData.rejected, (state, action) => {
+      .addCase(fetchUserGames.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
