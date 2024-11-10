@@ -10,6 +10,7 @@ import GameDetails from './pages/GameDetails';
 import CartPage from './pages/CartPage';
 import WishlistPage from './pages/WishlistPage';
 import Profile from './pages/Profile'; // Import Profile page
+import CheckoutPage from './pages/CheckoutPage';
 
 function App() {
   return (
@@ -26,9 +27,11 @@ function App() {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/profile" element={<Profile />} /> {/* Add the Profile route */}
+        <Route path="/checkout" element={<CheckoutPage />} />
       </Routes>
     </Router>
   );
 }
 
 export default App;
+

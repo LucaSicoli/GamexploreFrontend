@@ -223,7 +223,7 @@ const Profile = () => {
                           <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1.2rem' }}>
                             {game.name}
                           </Typography>
-                          <Typography variant="body2" color="textSecondary">
+                          <Typography variant="body2" color="white">
                             {game.isPublished ? 'Publicado' : 'Despublicado'} el {game.publishedDate || 'N/A'}
                           </Typography>
                           <Box display="flex" alignItems="center" gap="0.5rem" mt={0.5}>

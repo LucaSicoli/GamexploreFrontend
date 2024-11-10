@@ -20,6 +20,11 @@ code {
   transition: color 0.3s ease;
 }
 
+.text-white {
+  color: white;
+}
+
+
 .text-link:hover {
   color: #ffffff;
   text-decoration: underline;
@@ -42,3 +47,5 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .MuiSelect-icon {
   filter: invert(1);
 }
+
+
