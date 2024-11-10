@@ -139,7 +139,7 @@ const Profile = () => {
                 <Box
                   key={game._id}
                   sx={{
-                    backgroundColor: '#062A56',
+                    backgroundColor: 'rgba(202, 202, 202, 0.3)',
                     padding: '1rem 2rem',
                     borderRadius: '15px',
                     display: 'flex',
@@ -171,7 +171,7 @@ const Profile = () => {
                       <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1.2rem', textAlign: 'center' }}>
                         {game.name}
                       </Typography>
-                      <Typography variant="body2" color="textSecondary" textAlign="center">
+                      <Typography variant="body2" color="white" textAlign="center">
                         {game.isPublished ? 'Publicado' : 'Despublicado'} el {game.publishedDate || 'N/A'}
                       </Typography>
                       <Box display="flex" justifyContent="center" alignItems="center" gap="0.5rem" mt={0.5}>
