@@ -5,6 +5,7 @@ import gameReducer from './gameSlice';
 import cartReducer from './cartSlice';
 import wishlistReducer from './wishlistSlice';
 import filterReducer from './filterSlice'; // Import the new filterSlice
+import userReducer from './userSlice';
 
 const store = configureStore({
   reducer: {
@@ -13,6 +14,7 @@ const store = configureStore({
     cart: cartReducer,
     wishlist: wishlistReducer,
     filter: filterReducer, // Add filterSlice to the store
+    user: userReducer,
   },
 });
 
