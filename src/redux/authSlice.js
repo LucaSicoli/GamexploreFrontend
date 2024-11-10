@@ -18,11 +18,8 @@ export const registerUser = createAsyncThunk(
   async (formData, { rejectWithValue }) => {
     try {
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/register`, formData);
-      const { token, user } = response.data;
-
-      saveAuthData({ token, user });
-
-      return { token, user };
+      const { user } = response.data; // No se obtiene token en esta respuesta
+      return { user };
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Failed to register user';
       return rejectWithValue(errorMessage);
@@ -106,10 +103,7 @@ const authSlice = createSlice({
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        state.userRole = action.payload.user.role; // Set userRole directly
-        state.isAuthenticated = true;
+        state.user = action.payload.user; // Guardamos el usuario sin el token
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
