@@ -29,23 +29,23 @@ const GameDetails = () => {
     const fetchGameDetails = async () => {
       try {
         const token = localStorage.getItem('token');
-
-        // Incrementar visualizaciones al acceder a los detalles del juego
+    
         await axios.put(`${process.env.REACT_APP_API_URL}/games/${gameId}/views`, {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
-
-        // Obtener los detalles del juego
+    
         const response = await axios.get(
           `${process.env.REACT_APP_API_URL}/games/${gameId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-
+    
         setGame(response.data);
+        setComments(response.data.comments || []); // Actualiza los comentarios si están disponibles
       } catch (err) {
         setError('Error al cargar los detalles del juego');
       }
     };
+    
 
     fetchGameDetails();
   }, [gameId]);
@@ -57,7 +57,7 @@ const GameDetails = () => {
         alert("Usuario no autenticado.");
         return;
       }
-  
+
       const resultAction = await dispatch(addToWishlist({ gameName: game.name }));
       if (addToWishlist.fulfilled.match(resultAction)) {
         alert(resultAction.payload.message);
@@ -144,15 +144,15 @@ const GameDetails = () => {
               <Typography variant="h5" sx={{ fontFamily: 'Orbitron, sans-serif', fontSize: { xs: '1.5rem', md: '2.5rem' } }}>
                 {game.name}
               </Typography>
-              <Typography 
-                variant="h4" 
-                color="#00e676" 
+              <Typography
+                variant="h4"
+                color="#00e676"
                 sx={{ fontSize: { xs: '1.2rem', md: '2rem' }, ml: { xs: 2, md: 0 } }}
               >
                 {game.price === 0 ? 'Gratis' : `$${game.price}`}
               </Typography>
             </Box>
-
+  
             <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" mt={2} mb={2}>
               <Box display="flex" alignItems="center" flexDirection={{ xs: 'column', sm: 'row' }} gap={1}>
                 <Rating
@@ -166,7 +166,7 @@ const GameDetails = () => {
                 </Typography>
               </Box>
             </Box>
-
+  
             <Box display="flex" gap={2} flexDirection={{ xs: 'column', sm: 'row' }} mt={2} mb={2}>
               {userRole !== 'empresa' && (
                 <>
@@ -179,10 +179,10 @@ const GameDetails = () => {
                   >
                     Añadir al carrito
                   </Button>
-                  <Button 
-                    variant="contained" 
-                    color="secondary" 
-                    startIcon={<FavoriteIcon />} 
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    startIcon={<FavoriteIcon />}
                     onClick={handleAddToWishlist}
                     fullWidth={userRole !== 'empresa'}
                   >
@@ -191,7 +191,7 @@ const GameDetails = () => {
                 </>
               )}
             </Box>
-
+  
             <Card
               sx={{
                 display: 'flex',
@@ -209,17 +209,17 @@ const GameDetails = () => {
                 sx={{ width: '100%', maxHeight: { xs: 200, md: 300 }, borderRadius: '10px' }}
               />
             </Card>
-
+  
             <Box display="flex" flexWrap="wrap" gap={1} mt={2} mb={2}>
               {game.category?.split(', ').map((tag) => (
                 <Chip key={tag} label={tag} color="primary" variant="outlined" />
               ))}
             </Box>
-
+  
             <Typography variant="body1" paragraph sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>
               {game.description}
             </Typography>
-
+  
             <Box mt={4}>
               <Typography variant="h5" gutterBottom>
                 Requerimientos del sistema
@@ -243,7 +243,7 @@ const GameDetails = () => {
                 </Table>
               </TableContainer>
             </Box>
-
+  
             <Box mt={4}>
               <Typography variant="h5" gutterBottom>
                 Sobre la empresa desarrolladora
@@ -262,7 +262,7 @@ const GameDetails = () => {
                 </Box>
               </Box>
             </Box>
-
+  
             <Box mt={4}>
               <Typography variant="h5" gutterBottom>
                 Reseñas de la comunidad
@@ -299,61 +299,64 @@ const GameDetails = () => {
                 )}
               </Box>
             </Box>
-
-            <Box mt={4}>
-              <Typography variant="h6" gutterBottom>
-                Agregar un comentario
-              </Typography>
-              <TextField
-                label="Escribe tu comentario y puntúa el juego"
-                multiline
-                rows={4}
-                variant="outlined"
-                fullWidth
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                sx={{
-                  mt: 2,
-                  backgroundColor: 'transparent',
-                  borderRadius: '5px',
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': {
-                      borderColor: '#FFFFFF',
+  
+            {userRole === 'gamer' && (
+              <Box mt={4}>
+                <Typography variant="h6" gutterBottom>
+                  Agregar un comentario
+                </Typography>
+                <TextField
+                  label="Escribe tu comentario y puntúa el juego"
+                  multiline
+                  rows={4}
+                  variant="outlined"
+                  fullWidth
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  sx={{
+                    mt: 2,
+                    backgroundColor: 'transparent',
+                    borderRadius: '5px',
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: '#FFFFFF',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: '#4CAF50',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#4CAF50',
+                      },
                     },
-                    '&:hover fieldset': {
-                      borderColor: '#4CAF50',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#4CAF50',
-                    },
-                  },
-                  color: 'white',
-                  '& .MuiInputBase-input': {
                     color: 'white',
-                  },
-                }}
-              />
-              <Box mt={2} marginTop={1}>
-                <Rating
-                  name="rating"
-                  value={newRating}
-                  onChange={(event, newValue) => setNewRating(newValue)}
+                    '& .MuiInputBase-input': {
+                      color: 'white',
+                    },
+                  }}
                 />
+                <Box mt={2} marginTop={1}>
+                  <Rating
+                    name="rating"
+                    value={newRating}
+                    onChange={(event, newValue) => setNewRating(newValue)}
+                  />
+                </Box>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleAddComment}
+                  sx={{ mt: 2 }}
+                >
+                  Agregar comentario
+                </Button>
               </Box>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleAddComment}
-                sx={{ mt: 2 }}
-              >
-                Agregar comentario
-              </Button>
-            </Box>
+            )}
           </Box>
         </Container>
       </Box>
     </>
   );
+  
 };
 
 export default GameDetails;
