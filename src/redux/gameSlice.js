@@ -38,6 +38,24 @@ export const fetchCompanyGames = createAsyncThunk(
     }
 );
 
+// Acción asíncrona para obtener un juego por ID
+export const fetchGameById = createAsyncThunk(
+    'game/fetchGameById',
+    async (gameId, { rejectWithValue }) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/games/${gameId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            return response.data; // Retorna los datos del juego
+        } catch (error) {
+            return rejectWithValue(error.response.data || 'Error fetching game.');
+        }
+    }
+);
+
 // Acción asíncrona para obtener el conteo de compras de cada juego
 export const fetchGamesPurchasesCount = createAsyncThunk(
     'game/fetchGamesPurchasesCount',
@@ -55,7 +73,6 @@ export const fetchGamesPurchasesCount = createAsyncThunk(
         }
     }
 );
-
 
 // Acción asíncrona para alternar el estado de publicación de un juego
 export const togglePublishGame = createAsyncThunk(
@@ -111,6 +128,25 @@ export const incrementGameViews = createAsyncThunk(
     }
 );
 
+// Nueva acción asíncrona para actualizar un juego
+export const updateGame = createAsyncThunk(
+    'game/updateGame',
+    async ({ gameId, formData }, { rejectWithValue }) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.put(`${process.env.REACT_APP_API_URL}/games/${gameId}`, formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return response.data; // Retorna los datos del juego actualizado
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
 const gameSlice = createSlice({
     name: 'game',
     initialState: {
@@ -145,7 +181,7 @@ const gameSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload?.message || 'Error creating the game.';
             })
-
+    
             // Manejo de fetchCompanyGames
             .addCase(fetchCompanyGames.pending, (state) => {
                 state.loading = true;
@@ -159,77 +195,107 @@ const gameSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload?.message || 'Error fetching company games.';
             })
-
+    
+            // Manejo de fetchGameById
+            .addCase(fetchGameById.pending, (state) => {
+                state.loading = true; 
+                state.error = null; 
+            })
+            .addCase(fetchGameById.fulfilled, (state, action) => {
+                state.loading = false; 
+                state.game = action.payload; 
+            })
+            .addCase(fetchGameById.rejected, (state, action) => {
+                state.loading = false; 
+                state.error = action.payload?.message || 'Error fetching game.'; 
+            })
+    
+            // Manejo de updateGame
+            .addCase(updateGame.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+                state.successMessage = null;
+            })
+            .addCase(updateGame.fulfilled, (state, action) => {
+                state.loading = false;
+                state.game = action.payload.game;
+                state.successMessage = 'Game updated successfully.';
+            })
+            .addCase(updateGame.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload?.message || 'Error updating the game.';
+            })
+    
             // Manejo de fetchGamesPurchasesCount
             .addCase(fetchGamesPurchasesCount.pending, (state) => {
-                state.loading = true;
+                state.loading = true; 
             })
             .addCase(fetchGamesPurchasesCount.fulfilled, (state, action) => {
-                state.loading = false;
+                state.loading = false; 
                 const purchasesData = action.payload;
-                
+    
                 // Actualiza la información de compras en companyGames
                 state.companyGames = state.companyGames.map((game) => {
                     const purchaseInfo = purchasesData.find((item) => item._id === game._id);
-                    return { ...game, purchases: purchaseInfo ? purchaseInfo.purchases : 0 };
-                });
+                    return { ...game, purchases: purchaseInfo ? purchaseInfo.purchases : 0 }; 
+                }); 
             })
             .addCase(fetchGamesPurchasesCount.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload?.message || 'Error fetching games purchases count.';
+                state.loading = false; 
+                state.error = action.payload?.message || 'Error fetching games purchases count.'; 
             })
-
+    
             // Manejo de togglePublishGame
             .addCase(togglePublishGame.pending, (state) => {
-                state.loading = true;
+                state.loading = true; 
             })
             .addCase(togglePublishGame.fulfilled, (state, action) => {
-                state.loading = false;
-                const { gameId, isPublished } = action.payload;
-                const game = state.companyGames.find((g) => g._id === gameId);
+                state.loading = false; 
+                const { gameId, isPublished } = action.payload; 
+                const game = state.companyGames.find((g) => g._id === gameId); 
                 if (game) {
-                    game.isPublished = isPublished;
+                    game.isPublished = isPublished; 
                 }
             })
             .addCase(togglePublishGame.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload?.message || 'Error toggling publish status.';
+                state.loading = false; 
+                state.error = action.payload?.message || 'Error toggling publish status.'; 
             })
-
+    
             // Manejo de deleteGame
             .addCase(deleteGame.pending, (state) => {
-                state.loading = true;
+                state.loading = true; 
             })
             .addCase(deleteGame.fulfilled, (state, action) => {
-                state.loading = false;
-                state.companyGames = state.companyGames.filter((game) => game._id !== action.payload);
+                state.loading = false; 
+                state.companyGames = state.companyGames.filter((game) => game._id !== action.payload); 
             })
             .addCase(deleteGame.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
+                state.loading = false; 
+                state.error = action.payload; 
             })
-
+    
             // Manejo de incrementGameViews
             .addCase(incrementGameViews.pending, (state) => {
-                state.loading = true;
+                state.loading = true; 
             })
             .addCase(incrementGameViews.fulfilled, (state, action) => {
-                state.loading = false;
-                const { gameId, views } = action.payload;
-                const game = state.companyGames.find((g) => g._id === gameId);
+                state.loading = false; 
+                const { gameId, views } = action.payload; 
+                const game = state.companyGames.find((g) => g._id === gameId); 
                 if (game) {
-                    game.views = views;
+                    game.views = views; 
                 }
-                if (state.game && state.game._id === gameId) {
-                    state.game.views = views;
+                if (state.game && state.game._id === gameId) { 
+                    state.game.views = views; 
                 }
             })
             .addCase(incrementGameViews.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
+                state.loading = false; 
+                state.error = action.payload; 
             });
     },
 });
 
-export const { clearError, clearSuccessMessage } = gameSlice.actions;
+export const { clearError ,clearSuccessMessage}  =  gameSlice.actions; 
 export default gameSlice.reducer;

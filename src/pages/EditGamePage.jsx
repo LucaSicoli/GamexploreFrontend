@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { TextField, Button, Typography, Box, FormControl, InputLabel, Select, MenuItem, FormControlLabel, Checkbox, FormGroup } from '@mui/material';
+import { TextField, Button, Typography, Box, FormControl, InputLabel, Select, MenuItem, FormControlLabel, Checkbox, FormGroup, Snackbar, Alert } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchGameById, updateGame, clearError, clearSuccessMessage } from '../redux/gameSlice';
+import Navbar from '../components/Navbar';
 
 const EditGamePage = () => {
     const { gameId } = useParams();
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { game, loading, error, successMessage } = useSelector((state) => state.game);
+    
     const [gameData, setGameData] = useState({
         name: '',
         category: [],
@@ -25,6 +27,11 @@ const EditGamePage = () => {
         platform: [],
     });
 
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
+    // Cargar el juego al montar el componente
     useEffect(() => {
         dispatch(fetchGameById(gameId));
     }, [dispatch, gameId]);
@@ -33,10 +40,10 @@ const EditGamePage = () => {
         if (game) {
             setGameData({
                 name: game.name,
-                category: game.category || [],
+                category: game.category ? game.category.split(',') : [],
                 description: game.description,
                 price: game.price,
-                players: game.players,
+                players: game.players || 'Single-player',
                 language: game.language || [],
                 platform: game.platform || [],
                 systemRequirements: game.systemRequirements,
@@ -44,6 +51,27 @@ const EditGamePage = () => {
             });
         }
     }, [game]);
+
+    useEffect(() => {
+        if (successMessage) {
+            setSnackbarMessage('Cambios guardados exitosamente!');
+            setSnackbarSeverity('success');
+            setOpenSnackbar(true);
+            setTimeout(() => {
+                dispatch(clearSuccessMessage());
+                navigate('/home');
+            }, 3000);
+        }
+    }, [successMessage, dispatch, navigate]);
+
+    useEffect(() => {
+        if (error) {
+            setSnackbarMessage(error);
+            setSnackbarSeverity('error');
+            setOpenSnackbar(true);
+            dispatch(clearError());
+        }
+    }, [error, dispatch]);
 
     const handleInputChange = (e) => setGameData({ ...gameData, [e.target.name]: e.target.value });
 
@@ -106,10 +134,11 @@ const EditGamePage = () => {
         const formData = new FormData();
 
         formData.append('name', gameData.name);
-        formData.append('category', gameData.category.join(', '));
+        formData.append('category', gameData.category.join(','));
         formData.append('description', gameData.description);
         formData.append('price', gameData.price);
         formData.append('players', gameData.players);
+        
         gameData.language.forEach((lang) => formData.append('language', lang));
         
         Object.keys(gameData.systemRequirements.minimum).forEach(key => {
@@ -120,90 +149,142 @@ const EditGamePage = () => {
             formData.append(`systemRequirements[recommended][${key}]`, gameData.systemRequirements.recommended[key]);
         });
 
-        if (Array.isArray(gameData.platform)) {
-            gameData.platform.forEach((platform) => {
-                formData.append('platform', platform);
-            });
-        }
+       if (Array.isArray(gameData.platform)) {
+           gameData.platform.forEach((platform) => {
+               formData.append('platform', platform);
+           });
+       }
 
-        if (gameData.image) {
-            formData.append('image', gameData.image);
-        }
+       if (gameData.image) {
+           formData.append('image', gameData.image);
+       }
 
-        dispatch(updateGame({ gameId, formData }));
+       dispatch(updateGame({ gameId, formData }));
     };
 
-    useEffect(() => {
-        if (error) {
-            setTimeout(() => dispatch(clearError()), 3000);
-        }
-
-        if (successMessage) {
-            setTimeout(() => {
-                dispatch(clearSuccessMessage());
-                navigate('/home');
-            }, 5000);
-        }
-    }, [error, successMessage, dispatch, navigate]);
+    const handleCloseSnackbar = () => {
+        setOpenSnackbar(false);
+    };
 
     return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', padding: '2rem', background: 'linear-gradient(0deg, #062A56 0%, #03152B 100%)', minHeight: '100vh' }}>
-            <Box sx={{ width: '100%', maxWidth: '700px', backgroundColor: 'rgba(202, 202, 202, 0.12)', padding: '2rem', borderRadius: '10px', color: 'white' }}>
-                <Typography variant="h4" sx={{ mb: 2, textAlign: 'center', fontFamily: 'Orbitron' }}>Edit Game</Typography>
+        <>
+            <Navbar />
+            <Box sx={{ display: 'flex', justifyContent: 'center', padding: '2rem', backgroundColor: '#041C32', minHeight: '100vh' }}>
+                <Box sx={{ width: '100%', maxWidth: '700px', backgroundColor: 'rgba(202, 202, 202, 0.12)', padding: '2rem', borderRadius: '10px', color: 'white' }}>
+                    <Typography variant="h4" sx={{ mb: 2, textAlign: 'center', fontFamily:'Orbitron' }}>Edit Game</Typography>
 
-                {/* Formulario de edición */}
-                <TextField label="Nombre" name="name" variant="outlined" fullWidth margin="normal" value={gameData.name} onChange={handleInputChange} InputLabelProps={{ style: { color: 'white' } }} InputProps={{ style: { color: 'white' } }} />
+                    {/* Formulario de edición */}
+                    <TextField label="Nombre" name="name" variant="outlined" fullWidth margin="normal" value={gameData.name} onChange={handleInputChange} InputLabelProps={{ style:{ color:'white' } }} InputProps={{ style:{ color:'white' } }} />
 
-                <Typography variant="h6" sx={{ mt: 2 }}>Categorías</Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
-                    {['Aventura', 'Acción', 'RPG', 'MOBA', 'Deportes', 'Estrategia', 'Terror', 'FPS', 'Free To Play'].map((category) => (
-                        <FormControlLabel
-                            key={category}
-                            control={
-                                <Checkbox
-                                    value={category}
-                                    checked={gameData.category.includes(category)}
-                                    onChange={handleCategoryChange}
-                                    sx={{ color: 'white' }}
+                    {/* Categoría con Checkbox */}
+                    <Typography variant="h6" sx={{ mt: 2 }}>Categorías</Typography>
+                    <FormGroup row>
+                        {['Aventura', 'Acción', 'RPG', 'MOBA', 'Deportes', 'Estrategia', 'Terror', 'FPS','Free To Play'].map((category) => (
+                            <FormControlLabel
+                                key={category}
+                                control={
+                                    <Checkbox
+                                        checked={gameData.category.includes(category)}
+                                        onChange={handleCategoryChange}
+                                        value={category}
+                                        sx={{ color:'white' }}
+                                    />
+                                }
+                                label={<Typography sx={{ color:'white' }}>{category}</Typography>}
+                            />
+                        ))}
+                    </FormGroup>
+
+                    <TextField label="Descripción" name="description" variant="outlined" fullWidth margin="normal" multiline minRows={3} value={gameData.description} onChange={handleInputChange} InputLabelProps={{ style:{ color:'white' } }} InputProps={{ style:{ color:'white' } }} />
+
+                    <TextField label="Precio" name="price" type="number" variant="outlined" fullWidth margin="normal" value={gameData.price} onChange={handleInputChange} InputLabelProps={{ style:{ color:'white' } }} InputProps={{ style:{ color:'white' } }} />
+
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel sx={{ color:'white' }}>Plataforma</InputLabel>
+                        <Select name="platform" multiple value={gameData.platform} onChange={handlePlatformChange} renderValue={(selected) => selected.join(',')} sx={{ color:'white', '.MuiOutlinedInput-notchedOutline':{ borderColor:'white' } }}>
+                            <MenuItem value="Windows">Windows</MenuItem>
+                            <MenuItem value="Mac">Mac</MenuItem>
+                            <MenuItem value="Linux">Linux</MenuItem>
+                        </Select>
+                    </FormControl>
+
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel sx={{ color:'white' }}>Cantidad de Jugadores</InputLabel>
+                        <Select name="players" value={gameData.players} onChange={handleInputChange} sx={{ color:'white', '.MuiOutlinedInput-notchedOutline':{ borderColor:'white' } }}>
+                            <MenuItem value="Single-player">Single-player</MenuItem>
+                            <MenuItem value="Multi-player">Multi-player</MenuItem>
+                        </Select>
+                    </FormControl>
+
+                    <Typography variant="h6" sx={{ mt: 2 }}>Idioma</Typography>
+                    <FormGroup row>
+                        {['Inglés', 'Español', 'Francés', 'Alemán', 'Chino', 'Japonés', 'Italiano', 'Portugués'].map((lang) => (
+                            <FormControlLabel
+                                key={lang}
+                                control={
+                                    <Checkbox
+                                        value={lang}
+                                        checked={gameData.language.includes(lang)}
+                                        onChange={handleLanguageChange}
+                                        sx={{ color:'white' }}
+                                    />
+                                }
+                                label={<Typography sx={{ color:'white' }}>{lang}</Typography>}
+                            />
+                        ))}
+                    </FormGroup>
+
+                    <Button variant="contained" component="label" fullWidth sx={{ mt: 2 }}>
+                        Subir Imagen
+                        <input type="file" name="image" hidden onChange={handleFileChange} />
+                    </Button>
+
+                    {gameData.imagePreview && (
+                        <Box sx={{ mt: 2, textAlign:'center' }}>
+                            <img src={gameData.imagePreview} alt="Vista previa" style={{ maxWidth:'100%', height:'auto', borderRadius:'5px' }} />
+                        </Box>
+                    )}
+
+                    <Typography variant="h6" sx={{ mt: 2 }}>Requerimientos del Sistema</Typography>
+                    {['minimum', 'recommended'].map((level) => (
+                        <Box key={level} sx={{ mt: 2 }}>
+                            <Typography variant="subtitle1" sx={{ color: 'gray', fontStyle: 'italic' }}>
+                                {level === 'minimum' ? 'Mínimos' : 'Recomendados'}
+                            </Typography>
+                            {['cpu', 'gpu', 'ram', 'storage'].map((field) => (
+                                <TextField
+                                    key={field}
+                                    label={field.toUpperCase()}
+                                    variant="outlined"
+                                    fullWidth
+                                    margin="normal"
+                                    value={gameData.systemRequirements[level][field]}
+                                    onChange={(e) => handleSystemRequirementChange(e, level, field)}
+                                    InputLabelProps={{ style:{ color:'white' } }}
+                                    InputProps={{ style:{ color:'white' } }}
                                 />
-                            }
-                            label={<Typography sx={{ color: 'white' }}>{category}</Typography>}
-                        />
+                            ))}
+                        </Box>
                     ))}
-                </Box>
 
-                <TextField label="Descripción" name="description" variant="outlined" fullWidth margin="normal" multiline minRows={3} value={gameData.description} onChange={handleInputChange} InputLabelProps={{ style: { color: 'white' } }} InputProps={{ style: { color: 'white' } }} />
-
-                <TextField label="Precio" name="price" type="number" variant="outlined" fullWidth margin="normal" value={gameData.price} onChange={handleInputChange} InputLabelProps={{ style: { color: 'white' } }} InputProps={{ style: { color: 'white' } }} />
-
-                <FormControl fullWidth margin="normal">
-                    <InputLabel sx={{ color: 'white' }}>Plataforma</InputLabel>
-                    <Select name="platform" multiple value={gameData.platform} onChange={handlePlatformChange} renderValue={(selected) => selected.join(', ')} sx={{ color: 'white', '.MuiOutlinedInput-notchedOutline': { borderColor: 'white' } }}>
-                        <MenuItem value="Windows">Windows</MenuItem>
-                        <MenuItem value="Mac">Mac</MenuItem>
-                        <MenuItem value="Linux">Linux</MenuItem>
-                    </Select>
-                </FormControl>
-
-                <Button variant="contained" component="label" fullWidth sx={{ mt: 2 }}>Subir Imagen
-                    <input type="file" name="image" hidden onChange={handleFileChange} />
-                </Button>
-
-                {gameData.imagePreview && (
-                    <Box sx={{ mt: 2, textAlign: 'center' }}>
-                        <img src={gameData.imagePreview} alt="Vista previa" style={{ maxWidth: '100%', height: 'auto', borderRadius: '5px' }} />
+                    <Box sx={{ display:'flex', justifyContent:'space-between', mt:'4rem' }}>
+                        <Button variant="contained" color="error" onClick={() => navigate('/home')}>Cancelar</Button>
+                        <Button variant="contained" color="primary" onClick={handleSubmit} disabled={loading}>{loading ? 'Updating...' : 'Save Changes'}</Button>
                     </Box>
-                )}
-
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-                    <Button variant="contained" color="error" onClick={() => navigate('/home')}>Cancelar</Button>
-                    <Button variant="contained" color="primary" onClick={handleSubmit} disabled={loading}>{loading ? 'Updating...' : 'Save Changes'}</Button>
                 </Box>
-
-                {error && <Typography color="error" sx={{ mt: 2 }}>{error}</Typography>}
-                {successMessage && <Typography color="success" sx={{ mt: 2 }}>{successMessage}</Typography>}
             </Box>
-        </Box>
+
+            <Snackbar
+                open={openSnackbar}
+                autoHideDuration={3000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            >
+                <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
+        </>
     );
 };
 

@@ -11,6 +11,7 @@ import CartPage from './pages/CartPage';
 import WishlistPage from './pages/WishlistPage';
 import Profile from './pages/Profile'; // Import Profile page
 import CheckoutPage from './pages/CheckoutPage';
+import EditGamePage from './pages/EditGamePage';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/profile" element={<Profile />} /> {/* Add the Profile route */}
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/edit-game/:gameId" element={<EditGamePage />} />
       </Routes>
     </Router>
   );

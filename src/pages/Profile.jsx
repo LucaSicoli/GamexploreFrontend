@@ -19,15 +19,18 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import SearchIcon from '@mui/icons-material/Search';
-import Navbar from '../components/Navbar';
+import { useNavigate } from 'react-router-dom'; // Importar useNavigate
 import { fetchUserGames } from '../redux/userSlice';
 import { getWishlist } from '../redux/wishlistSlice';
-import { incrementGameViews } from '../redux/gameSlice';
+import { incrementGameViews, togglePublishGame, deleteGame } from '../redux/gameSlice';
+import Navbar from '../components/Navbar';
 
 const Profile = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate(); // Inicializar navigate
   const { games, loading, error } = useSelector((state) => state.user);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedGameId, setSelectedGameId] = useState(null); // Para almacenar el ID del juego seleccionado
   const [searchTerm, setSearchTerm] = useState('');
   const isMobile = useMediaQuery('(max-width:600px)'); // Detecta si es mobile
 
@@ -36,12 +39,14 @@ const Profile = () => {
     dispatch(getWishlist());
   }, [dispatch]);
 
-  const handleMenuClick = (event) => {
+  const handleMenuClick = (event, gameId) => {
     setAnchorEl(event.currentTarget);
+    setSelectedGameId(gameId); // Establecer el ID del juego seleccionado
   };
 
   const handleMenuClose = () => {
     setAnchorEl(null);
+    setSelectedGameId(null); // Limpiar el ID del juego seleccionado
   };
 
   const handleSearchChange = (event) => {
@@ -50,6 +55,21 @@ const Profile = () => {
 
   const handleIncrementViews = (gameId) => {
     dispatch(incrementGameViews(gameId));
+  };
+
+  const handleEditGame = () => {
+    navigate(`/edit-game/${selectedGameId}`); // Redirigir a la página de edición
+    handleMenuClose(); // Cerrar el menú
+  };
+
+  const handleTogglePublish = () => {
+    dispatch(togglePublishGame(selectedGameId)); // Cambiar el estado de publicación
+    handleMenuClose(); // Cerrar el menú
+  };
+
+  const handleDeleteGame = () => {
+    dispatch(deleteGame(selectedGameId)); // Eliminar el juego
+    handleMenuClose(); // Cerrar el menú
   };
 
   const filteredGames = games.filter((game) =>
@@ -163,12 +183,20 @@ const Profile = () => {
                       marginBottom: isMobile ? '1rem' : '0',
                     }}
                   />
-
                   {/* Contenido en mobile */}
                   {isMobile ? (
                     <>
                       <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1.2rem', textAlign: 'center' }}>
                         {game.name}
+                        {/* Círculo de estado */}
+                        <span style={{
+                          width:"10px",
+                          height:"10px",
+                          borderRadius:"50%",
+                          backgroundColor: game.isPublished ? "green" : "red",
+                          display:"inline-block",
+                          marginLeft:"8px"
+                        }} />
                       </Typography>
                       <Typography variant="body2" color="white" textAlign="center">
                         {game.isPublished ? `Publicado` : `Despublicado`} el {game.publishedDate || `N/A`}
@@ -192,9 +220,9 @@ const Profile = () => {
                           <ShoppingCartIcon fontSize="small" />
                           <Typography variant="body2">{game.purchases || `0`}</Typography>
                         </Box>
-                        {/* Tasa de conversión */}
                         <Box display="flex" alignItems="center" gap="0.3rem">
                           <TrendingUpIcon fontSize="small" />
+                          {/* Cálculo correcto de la tasa de conversión */}
                           <Typography variant="body2">
                             {(game.purchases && game.views) 
                               ? `${((game.purchases / game.views) * 100).toFixed(2)}%`
@@ -206,27 +234,38 @@ const Profile = () => {
                       <Box display="flex" justifyContent="center" mt={1}>
                         <IconButton
                           aria-label="more"
-                          onClick={handleMenuClick}
+                          onClick={(event) => handleMenuClick(event, game._id)}
                           sx={{ color:`white` }}
                         >
                           <MoreVertIcon />
                         </IconButton>
                         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-                          <MenuItem onClick={handleMenuClose}>Edit</MenuItem>
-                          <MenuItem onClick={handleMenuClose}>
+                          {/* Opciones del menú */}
+                          <MenuItem onClick={handleEditGame}>Edit</MenuItem>
+                          <MenuItem onClick={handleTogglePublish}>
                             {game.isPublished ? `Despublicar` : `Publicar`}
                           </MenuItem>
-                          <MenuItem onClick={handleMenuClose}>Eliminar</MenuItem>
+                          <MenuItem onClick={handleDeleteGame}>Eliminar</MenuItem>
                         </Menu>
                       </Box>
                     </>
                   ) : (
                     // Contenido en escritorio
                     <>
+                      {/* Información del juego */}
                       <Box display={`flex`} alignItems={`center`} gap={`1.5rem`} flexWrap={`wrap`}>
                         <Box>
                           <Typography variant={`h6`} sx={{ fontWeight:`bold`, fontSize:`1.2rem` }}>
                             {game.name}
+                            {/* Círculo de estado */}
+                            <span style={{
+                              width:"10px",
+                              height:"10px",
+                              borderRadius:"50%",
+                              backgroundColor: game.isPublished ? "green" : "red",
+                              display:"inline-block",
+                              marginLeft:"8px"
+                            }} />
                           </Typography>
                           <Typography variant={`body2`} color={`white`}>
                             {game.isPublished ? `Publicado` : `Despublicado`} el {game.publishedDate || `N/A`}
@@ -276,7 +315,7 @@ const Profile = () => {
                       {/* Menú de opciones */}
                       <IconButton
                         aria-label={`more`}
-                        onClick={handleMenuClick}
+                        onClick={(event) => handleMenuClick(event, game._id)}
                         sx={{ color:`white` }}
                       >
                         <MoreVertIcon />
@@ -285,13 +324,13 @@ const Profile = () => {
                       {/* Opciones del menú */}
                       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
                         {/* Aquí puedes agregar las opciones del menú */}
-                        <MenuItem onClick={handleMenuClose}>Edit</MenuItem>
-                        <MenuItem onClick={handleMenuClose}>
+                        <MenuItem onClick={handleEditGame}>Edit</MenuItem>
+                        <MenuItem onClick={handleTogglePublish}>
                           {game.isPublished ? `Despublicar` : `Publicar`}
                         </MenuItem>
 
                         {/* Opción para eliminar el juego */}
-                        <MenuItem onClick={handleMenuClose}>Eliminar</MenuItem>
+                        <MenuItem onClick={handleDeleteGame}>Eliminar</MenuItem>
                       </Menu>
 
                     </>
