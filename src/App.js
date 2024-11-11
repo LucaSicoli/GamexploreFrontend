@@ -1,4 +1,3 @@
-// src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
@@ -10,8 +9,9 @@ import CreateGamePage from './pages/CreateGamePage';
 import GameDetails from './pages/GameDetails';
 import CartPage from './pages/CartPage';
 import WishlistPage from './pages/WishlistPage';
-import ProfilePage from './pages/Profile';
-
+import Profile from './pages/Profile'; // Import Profile page
+import CheckoutPage from './pages/CheckoutPage';
+import EditGamePage from './pages/EditGamePage';
 
 function App() {
   return (
@@ -27,11 +27,13 @@ function App() {
         <Route path="/game/:gameId" element={<GameDetails />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/wishlist" element={<WishlistPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-
+        <Route path="/profile" element={<Profile />} /> {/* Add the Profile route */}
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/edit-game/:gameId" element={<EditGamePage />} />
       </Routes>
     </Router>
   );
 }
 
 export default App;
+

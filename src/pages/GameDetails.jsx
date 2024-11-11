@@ -1,25 +1,10 @@
-// src/pages/GameDetails.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import {
-  Container,
-  Typography,
-  Box,
-  Card,
-  CardMedia,
-  Chip,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
-  Paper,
-  Rating,
-  Grid,
-  TextField,
+  Container, Typography, Box, Card, CardMedia, Chip, Button, Table, TableBody, TableCell,
+  TableContainer, TableRow, Paper, Rating, Grid, TextField,
 } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -28,7 +13,6 @@ import Avatar from '@mui/material/Avatar';
 import Navbar from '../components/Navbar';
 import { addToWishlist } from '../redux/wishlistSlice';
 import { addToCart } from '../redux/cartSlice';
-
 
 const GameDetails = () => {
   const { gameId } = useParams();
@@ -39,43 +23,32 @@ const GameDetails = () => {
   const [newComment, setNewComment] = useState('');
   const [newRating, setNewRating] = useState(0);
   const [visibleCommentsCount, setVisibleCommentsCount] = useState(9);
-  const user = useSelector((state) => state.auth.user);
+  const { userRole } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchGameDetails = async () => {
       try {
         const token = localStorage.getItem('token');
+
+        // Incrementar visualizaciones al acceder a los detalles del juego
+        await axios.put(`${process.env.REACT_APP_API_URL}/games/${gameId}/views`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        // Obtener los detalles del juego
         const response = await axios.get(
           `${process.env.REACT_APP_API_URL}/games/${gameId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
+
         setGame(response.data);
-        setComments(response.data.comments || []);
       } catch (err) {
         setError('Error al cargar los detalles del juego');
       }
     };
+
     fetchGameDetails();
   }, [gameId]);
-
-  const handleAddToCart = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert("User is not authenticated.");
-        return;
-      }
-  
-      // Dispatch the addToCart action with gameId and quantity
-      dispatch(addToCart({ gameId: game._id, quantity: 1 }));
-     
-    } catch (err) {
-      console.error("Error adding to cart:", err);
-      alert("Failed to add game to cart.");
-    }
-  };
-  
-  
 
   const handleAddToWishlist = async () => {
     try {
@@ -94,9 +67,6 @@ const GameDetails = () => {
       alert("No se pudo agregar a la wishlist.");
     }
   };
-  
-  
-  
 
   const handleAddComment = async () => {
     if (!newComment.trim() || !newRating) return;
@@ -159,62 +129,69 @@ const GameDetails = () => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          padding: '2rem 0',
+          padding: { xs: '1rem', md: '2rem' },
         }}
       >
         <Container maxWidth="md">
           <Box
             sx={{
               backgroundColor: 'rgba(202, 202, 202, 0.12)',
-              padding: '2rem',
+              padding: { xs: '1rem', md: '2rem' },
               borderRadius: '10px',
               color: 'white',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
             }}
           >
-            <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-              <Typography variant="h3" sx={{ fontFamily: 'Orbitron, sans-serif' }}>
+            <Box display="flex" alignItems="center" justifyContent="space-between" mb={2} flexWrap="wrap">
+              <Typography variant="h5" sx={{ fontFamily: 'Orbitron, sans-serif', fontSize: { xs: '1.5rem', md: '2.5rem' } }}>
                 {game.name}
               </Typography>
               <Typography 
-                variant="h3" 
+                variant="h4" 
                 color="#00e676" 
-                sx={{ 
-                  ml: { xs: 2, md: 0 },
-                  mr: { md: '2rem' }    
-                }}
+                sx={{ fontSize: { xs: '1.2rem', md: '2rem' }, ml: { xs: 2, md: 0 } }}
               >
                 {game.price === 0 ? 'Gratis' : `$${game.price}`}
               </Typography>
             </Box>
 
-            <Box display="flex" alignItems="center" justifyContent="space-between" mt={2} mb={2}>
-              <Box display="flex" alignItems="center">
+            <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" mt={2} mb={2}>
+              <Box display="flex" alignItems="center" flexDirection={{ xs: 'column', sm: 'row' }} gap={1}>
                 <Rating
                   value={game.rating || 0}
                   precision={0.5}
                   readOnly
                   icon={<StarIcon fontSize="inherit" />}
                 />
-                <Typography variant="body2" ml={1}>
+                <Typography variant="body2">
                   {game.rating ? game.rating.toFixed(1) : '0'} ({game.ratingCount || 0} reseñas)
                 </Typography>
               </Box>
             </Box>
-            {user.role === "gamer" && (
-              <Box display="flex" gap={2} mt={2} mb={2}>
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<ShoppingCartIcon />}
-                onClick={handleAddToCart}
-              >
-                Añadir al carrito
-              </Button>
-              <Button variant="contained" color="secondary" startIcon={<FavoriteIcon />} onClick={handleAddToWishlist}>
-                Favorito
-              </Button>
 
+            <Box display="flex" gap={2} flexDirection={{ xs: 'column', sm: 'row' }} mt={2} mb={2}>
+              {userRole !== 'empresa' && (
+                <>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<ShoppingCartIcon />}
+                    onClick={() => dispatch(addToCart({ gameId: game._id, quantity: 1 }))}
+                    fullWidth={userRole !== 'empresa'}
+                  >
+                    Añadir al carrito
+                  </Button>
+                  <Button 
+                    variant="contained" 
+                    color="secondary" 
+                    startIcon={<FavoriteIcon />} 
+                    onClick={handleAddToWishlist}
+                    fullWidth={userRole !== 'empresa'}
+                  >
+                    Favorito
+                  </Button>
+                </>
+              )}
             </Box>
             )}
             
@@ -233,7 +210,7 @@ const GameDetails = () => {
                 component="img"
                 image={game.imageUrl}
                 alt={game.name}
-                sx={{ width: '100%', maxHeight: 300, borderRadius: '10px' }}
+                sx={{ width: '100%', maxHeight: { xs: 200, md: 300 }, borderRadius: '10px' }}
               />
             </Card>
 
@@ -243,7 +220,7 @@ const GameDetails = () => {
               ))}
             </Box>
 
-            <Typography variant="body1" paragraph>
+            <Typography variant="body1" paragraph sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>
               {game.description}
             </Typography>
 
@@ -255,30 +232,17 @@ const GameDetails = () => {
                 <Table>
                   <TableBody>
                     <TableRow>
-                      <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold' }}>Hardware</TableCell>
-                      <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold' }}>Mínimos</TableCell>
-                      <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold' }}>Recomendados</TableCell>
+                      <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold', fontSize: { xs: '0.8rem', md: '1rem' } }}>Hardware</TableCell>
+                      <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold', fontSize: { xs: '0.8rem', md: '1rem' } }}>Mínimos</TableCell>
+                      <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold', fontSize: { xs: '0.8rem', md: '1rem' } }}>Recomendados</TableCell>
                     </TableRow>
-                    <TableRow>
-                      <TableCell align="center" sx={{ color: 'white' }}>CPU</TableCell>
-                      <TableCell align="center" sx={{ color: 'white' }}>{game.systemRequirements?.minimum?.cpu || 'N/A'}</TableCell>
-                      <TableCell align="center" sx={{ color: 'white' }}>{game.systemRequirements?.recommended?.cpu || 'N/A'}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell align="center" sx={{ color: 'white' }}>GPU</TableCell>
-                      <TableCell align="center" sx={{ color: 'white' }}>{game.systemRequirements?.minimum?.gpu || 'N/A'}</TableCell>
-                      <TableCell align="center" sx={{ color: 'white' }}>{game.systemRequirements?.recommended?.gpu || 'N/A'}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell align="center" sx={{ color: 'white' }}>RAM</TableCell>
-                      <TableCell align="center" sx={{ color: 'white' }}>{game.systemRequirements?.minimum?.ram || 'N/A'}</TableCell>
-                      <TableCell align="center" sx={{ color: 'white' }}>{game.systemRequirements?.recommended?.ram || 'N/A'}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell align="center" sx={{ color: 'white' }}>DISK</TableCell>
-                      <TableCell align="center" sx={{ color: 'white' }}>{game.systemRequirements?.minimum?.storage || 'N/A'}</TableCell>
-                      <TableCell align="center" sx={{ color: 'white' }}>{game.systemRequirements?.recommended?.storage || 'N/A'}</TableCell>
-                    </TableRow>
+                    {['cpu', 'gpu', 'ram', 'storage'].map((spec) => (
+                      <TableRow key={spec}>
+                        <TableCell align="center" sx={{ color: 'white', fontSize: { xs: '0.8rem', md: '1rem' } }}>{spec.toUpperCase()}</TableCell>
+                        <TableCell align="center" sx={{ color: 'white' }}>{game.systemRequirements?.minimum?.[spec] || 'N/A'}</TableCell>
+                        <TableCell align="center" sx={{ color: 'white' }}>{game.systemRequirements?.recommended?.[spec] || 'N/A'}</TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -288,11 +252,11 @@ const GameDetails = () => {
               <Typography variant="h5" gutterBottom>
                 Sobre la empresa desarrolladora
               </Typography>
-              <Box display="flex" alignItems="center" gap={2}>
+              <Box display="flex" alignItems="center" gap={2} flexDirection={{ xs: 'column', sm: 'row' }}>
                 {game.developer?.logo && (
                   <Avatar src={game.developer.logo} alt={game.developer.name} sx={{ width: 64, height: 64 }} />
                 )}
-                <Box>
+                <Box textAlign={{ xs: 'center', sm: 'left' }}>
                   <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                     {game.developer?.name}
                   </Typography>

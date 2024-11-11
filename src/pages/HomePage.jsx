@@ -1,14 +1,14 @@
 // Homepage.jsx
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
-import { 
-  Container, Grid, Card, CardMedia, CardContent, Typography, Box, Pagination, TextField, InputAdornment, 
-  IconButton, Drawer 
+import {
+  Container, Grid, Card, CardMedia, CardContent, Typography, Box, Pagination,
+  Checkbox, FormControlLabel, Slider, Radio, RadioGroup, TextField, InputAdornment,
+  IconButton, Drawer
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import Navbar from '../components/Navbar'; 
-import FilterComponent from '../components/Filter';
+import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
 
 const Homepage = () => {
@@ -16,7 +16,7 @@ const Homepage = () => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [drawerOpen, setDrawerOpen] = useState(false); // Estado del Drawer
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
 
   const [filters, setFilters] = useState({
@@ -28,30 +28,43 @@ const Homepage = () => {
 
   const token = localStorage.getItem('token');
 
-  // Construcción de parámetros de consulta para la API
+  useEffect(() => {
+    if (!token) {
+      navigate('/login');
+    }
+  }, [token, navigate]);
+
   const buildQueryParams = useCallback(() => {
     const params = new URLSearchParams();
     if (filters.category) params.append('category', filters.category);
     if (filters.platform) params.append('platform', filters.platform);
-    if (filters.maxPrice >= 0) params.append('maxPrice', filters.maxPrice);
+    
+    // Enviar maxPrice solo si es mayor o igual a 0
+    if (filters.maxPrice >= 0) {
+      params.append('maxPrice', filters.maxPrice);
+    }
+    
     if (filters.search) params.append('search', filters.search);
     return params.toString();
   }, [filters]);
 
-  // Función para obtener juegos filtrados
+  const handleSearchChange = (e) => {
+    setFilters((prevFilters) => ({ ...prevFilters, search: e.target.value }));
+  };
+
   const fetchGames = useCallback(async () => {
     try {
       setLoading(true);
       const queryParams = buildQueryParams();
       const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/games/filter?${queryParams}`, 
+        `${process.env.REACT_APP_API_URL}/games/filter?${queryParams}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setGames(response.data);
       setLoading(false);
     } catch (error) {
-      console.error('Error al obtener los juegos:', error);
-      setError('Error al cargar los juegos.');
+      console.error('Error loading games:', error);
+      setError('Error loading games.');
       setLoading(false);
     }
   }, [buildQueryParams, token]);
@@ -60,7 +73,6 @@ const Homepage = () => {
     fetchGames();
   }, [fetchGames, page]);
 
-  // Control de cambios en filtros de categoría, plataforma, etc.
   const handleFilterChange = (e) => {
     const { name, value, checked, type } = e.target;
     setFilters((prevFilters) => ({
@@ -69,18 +81,12 @@ const Homepage = () => {
     }));
   };
 
-  // Control de búsqueda
-  const handleSearchChange = (e) => {
-    setFilters((prevFilters) => ({ ...prevFilters, search: e.target.value }));
-  };
-
-  // Lógica de cambio de precio
-  const handlePriceChange = (e, newValue) => {
-    setFilters((prevFilters) => ({ ...prevFilters, maxPrice: newValue }));
-  };
-
   const handleCardClick = (gameId) => {
     navigate(`/game/${gameId}`);
+  };
+
+  const handlePriceChange = (e, newValue) => {
+    setFilters((prevFilters) => ({ ...prevFilters, maxPrice: newValue }));
   };
 
   const handlePageChange = (event, value) => {
@@ -112,14 +118,14 @@ const Homepage = () => {
           flexDirection: { xs: 'column', md: 'row' },
         }}
       >
-        <Typography 
-          variant="h4" 
+        <Typography
+          variant="h4"
           sx={{
             color: 'white',
             fontFamily: 'Orbitron',
             marginLeft: { md: '20rem' },
             marginTop: { xs: '0.5rem', md: '1rem' },
-            marginBottom: { xs: '0.5rem'},
+            marginBottom: { xs: '0.5rem' },
           }}
         >
           Games
@@ -151,7 +157,7 @@ const Homepage = () => {
             display: { xs: 'flex', md: 'none' },
             alignItems: 'center',
             marginTop: '1rem',
-            gap: '0.5rem',
+            gap: '0.5rem', // Espacio entre el texto y el icono
           }}
         >
           <Typography sx={{ color: 'white' }}>Filtrar</Typography>
@@ -161,6 +167,7 @@ const Homepage = () => {
         </Box>
       </Box>
 
+      {/* linea divisoria blanca */}
       <Box
         sx={{
           width: { xs: '90%', md: '82%' },
@@ -172,22 +179,73 @@ const Homepage = () => {
         }}
       />
 
+      {/* sidebar */}
 
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: '5px' }}>
+        <Box
+          sx={{
+            display: { xs: 'none', md: 'block' },
+            width: '220px',
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: '10px',
+            padding: '1rem',
+            marginLeft: '2rem',
+            color: 'white',
+            border: '2px solid grey',
+            height: '620px',
+            flexDirection: 'column',
+            gap: '2rem', // Más espacio entre las secciones principales
+          }}
+        >
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <Typography variant="subtitle2">Categoría</Typography>
+            {['Aventura', 'Acción', 'RPG', 'MOBA', 'FPS', 'Estrategia', 'Free To Play'].map((category) => (
+              <FormControlLabel
+                key={category}
+                control={<Checkbox name="category" value={category} onChange={handleFilterChange} />}
+                label={category}
+              />
+            ))}
+          </Box>
 
-       <Box
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          alignItems: 'flex-start',
-          gap: '2rem',
-          width: '100%',
-          padding: '1rem',
-          marginTop: '-17px', // Reducción del margen superior
-        }}
-      >
-        {/* Sidebar o Drawer para filtros */}
-        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-          <FilterComponent filters={filters} onFilterChange={handleFilterChange} onPriceChange={handlePriceChange} />
+          <Box
+            sx={{
+              marginTop: '1rem', // Espacio adicional entre las secciones
+              display: 'flex',
+              flexDirection: 'column',  // Menor espacio entre el título y la barra
+              marginBottom: '1rem', // Espacio inferior entre esta sección y la siguiente
+            }}
+          >
+            <Typography variant="subtitle2">Precio Máximo</Typography>
+            <Slider
+              value={filters.maxPrice}
+              onChange={handlePriceChange}
+              min={0}
+              max={100}
+              valueLabelDisplay="auto"
+              valueLabelFormat={(value) => (value === 0 ? "Free" : `$${value}`)}
+              sx={{
+                color: 'white', // Color blanco para el Slider
+              }}
+            />
+
+          </Box>
+
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem',
+              marginTop: '1rem', // Espacio adicional entre las secciones
+            }}
+          >
+            <Typography variant="subtitle2">Sistema Operativo</Typography>
+            <RadioGroup name="platform" onChange={handleFilterChange}>
+              {['Windows', 'Mac', 'Linux'].map((platform) => (
+                <FormControlLabel key={platform} control={<Radio />} label={platform} value={platform} />
+              ))}
+            </RadioGroup>
+          </Box>
         </Box>
 
         {/* Contenedor de juegos */}
@@ -240,9 +298,16 @@ const Homepage = () => {
               page={page}
               onChange={handlePageChange}
               sx={{
-                '& .MuiPaginationItem-root': { color: 'white' },
-                '& .Mui-selected': { backgroundColor: 'rgba(255, 255, 255, 0.2)', color: 'white' },
-                '& .MuiPaginationItem-root:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                '& .MuiPaginationItem-root': {
+                  color: 'white', // Cambia el color del texto a blanco
+                },
+                '& .Mui-selected': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)', // Fondo transparente para el item seleccionado
+                  color: 'white', // Color del número seleccionado
+                },
+                '& .MuiPaginationItem-root:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)', // Fondo al pasar el cursor
+                },
               }}
             />
           </Box>
@@ -255,15 +320,68 @@ const Homepage = () => {
         onClose={toggleDrawer(false)}
         sx={{
           '& .MuiDrawer-paper': {
-            backgroundColor: '#1e1e1e',
-            color: 'white',
-            width: 250,
+            backgroundColor: '#1e1e1e', // Fondo oscuro para el Drawer
+            color: 'white', // Color blanco para el texto
+            width: 250, // Ancho del Drawer
             padding: '1rem',
           },
         }}
       >
-        <FilterComponent filters={filters} onFilterChange={handleFilterChange} onPriceChange={handlePriceChange} />
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <Typography variant="h6">Filtros</Typography>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <Typography variant="subtitle2">Categoría</Typography>
+            {['Aventura', 'Acción', 'RPG', 'MOBA'].map((category) => (
+              <FormControlLabel
+                key={category}
+                control={
+                  <Checkbox
+                    name="category"
+                    value={category}
+                    onChange={handleFilterChange}
+                    sx={{ color: 'white' }} // Checkbox blanco
+                  />
+                }
+                label={category}
+              />
+            ))}
+          </Box>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <Typography variant="subtitle2">Precio Máximo</Typography>
+            <Slider
+              value={filters.maxPrice}
+              onChange={handlePriceChange}
+              min={0}
+              max={100}
+              valueLabelDisplay="auto"
+              sx={{
+                color: 'white', // Color blanco para el Slider
+              }}
+            />
+          </Box>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <Typography variant="subtitle2">Sistema Operativo</Typography>
+            <RadioGroup name="platform" onChange={handleFilterChange}>
+              {['Windows', 'Mac', 'Linux'].map((platform) => (
+                <FormControlLabel
+                  key={platform}
+                  control={
+                    <Radio
+                      value={platform}
+                      sx={{ color: 'white' }} // Radio Button blanco
+                    />
+                  }
+                  label={platform}
+                />
+              ))}
+            </RadioGroup>
+          </Box>
+        </Box>
       </Drawer>
+
     </div>
   );
 };

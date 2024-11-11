@@ -36,3 +36,26 @@
     transform: rotate(360deg);
   }
 }
+
+/* Apply globally to all input fields */
+input {
+  color: white !important;
+  caret-color: white;
+}
+
+/* Adjust Material-UI TextField border color */
+.MuiOutlinedInput-root {
+  color: white !important;
+}
+
+.MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+  border-color: #FFFFFF !important;
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #FFFFFF !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #FFFFFF !important;
+}

@@ -3,14 +3,20 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './authSlice';
 import gameReducer from './gameSlice';
 import cartReducer from './cartSlice';
-import wishlistReducer from './wishlistSlice'; // Importa el reducer de wishlistSlice
+import wishlistReducer from './wishlistSlice';
+import filterReducer from './filterSlice'; // Import the new filterSlice
+import userReducer from './userSlice';
+import orderReducer from './orderSlice'; // Import the new orderSlice
 
 const store = configureStore({
   reducer: {
     auth: authReducer,
     game: gameReducer,
-    cart: cartReducer, // Asegúrate de que este reducer esté incluido
-    wishlist: wishlistReducer, // Incluye el reducer de wishlist
+    cart: cartReducer,
+    wishlist: wishlistReducer,
+    filter: filterReducer, // Add filterSlice to the store
+    user: userReducer,
+    order: orderReducer, // Add orderSlice to the store
   },
 });
 

@@ -3,12 +3,33 @@ body {
   font-Family: 'Orbitron, sans-serif';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-family: 'Nunito', sans-serif;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* index.css */
+.text-link {
+  color: #CACACA;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.text-white {
+  color: white;
+}
+
+
+.text-link:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
 
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
@@ -26,3 +47,5 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .MuiSelect-icon {
   filter: invert(1);
 }
+
+
