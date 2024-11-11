@@ -74,23 +74,23 @@ export const fetchGamesPurchasesCount = createAsyncThunk(
     }
 );
 
-// Acción asíncrona para alternar el estado de publicación de un juego
-export const togglePublishGame = createAsyncThunk(
-    'game/togglePublishGame',
-    async (gameId, { rejectWithValue }) => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await axios.put(`${process.env.REACT_APP_API_URL}/games/publish/${gameId}`, {}, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            return { gameId, isPublished: response.data.isPublished };
-        } catch (error) {
-            return rejectWithValue(error.response.data);
-        }
+export const togglePublishGame = createAsyncThunk('games/togglePublishGame', async (gameId, { rejectWithValue }) => {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await axios.put(`${process.env.REACT_APP_API_URL}/games/publish/${gameId}`, {}, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        
+        // Update publishedDate based on current state
+        const updatedGame = response.data.game;
+        return updatedGame; // Return updated game data with publishedDate
+    } catch (error) {
+        return rejectWithValue(error.response?.data || 'Error al cambiar el estado de publicación');
     }
-);
+});
+
 
 // Acción asíncrona para eliminar un juego
 export const deleteGame = createAsyncThunk(
@@ -251,10 +251,10 @@ const gameSlice = createSlice({
                 state.loading = true; 
             })
             .addCase(togglePublishGame.fulfilled, (state, action) => {
-                state.loading = false; 
-                const { gameId, isPublished } = action.payload; 
+                state.loading = false;
+                const { gameId, isPublished, publishedDate } = action.payload;
                 state.companyGames = state.companyGames.map(game =>
-                    game._id === gameId ? { ...game, isPublished } : game
+                    game._id === gameId ? { ...game, isPublished, publishedDate } : game
                 );
             })
             .addCase(togglePublishGame.rejected, (state, action) => {
