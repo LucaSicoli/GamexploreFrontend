@@ -64,6 +64,11 @@ const Profile = () => {
     handleMenuClose(); // Cerrar el menú
   };
 
+  const handleGameDetails = (gameId) => {
+    navigate(`/game/${gameId}`);
+    handleMenuClose(); // Cerrar el menú
+  };
+
   const handleTogglePublish = () => {
     dispatch(togglePublishGame(selectedGameId)); // Cambiar el estado de publicación
     handleMenuClose(); // Cerrar el menú
@@ -182,6 +187,7 @@ const Profile = () => {
                     color: 'white',
                     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
                   }}
+                  
                 >
                   {/* Imagen del juego */}
                   <img
@@ -281,6 +287,9 @@ const Profile = () => {
                             }} />
                           </Typography>
                           <Typography variant={`body2`} color={`white`}>
+                            Creado el {game.publishedDate || `N/A`}
+                          </Typography>
+                          <Typography variant={`body2`} color={`white`}>
                             {game.isPublished ? `Publicado` : `Despublicado`} el {game.publishedDate || `N/A`}
                           </Typography>
                           <Box display={`flex`} alignItems={`center`} gap={`0.5rem`} mt={0.5}>
@@ -336,6 +345,7 @@ const Profile = () => {
 
                       {/* Opciones del menú */}
                       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+                      <MenuItem onClick={() => handleGameDetails(game._id)}>Ver detalles</MenuItem>
                         {/* Aquí puedes agregar las opciones del menú */}
                         <MenuItem onClick={handleEditGame}>Edit</MenuItem>
                         {/* Cambiar texto según estado de publicación */}
