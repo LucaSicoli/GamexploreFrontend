@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TextField, Button, Typography, Box, FormControl, InputLabel, Select, MenuItem, FormControlLabel, Checkbox, FormGroup } from '@mui/material';
+import { TextField, Button, Typography, Box, FormControl, InputLabel, Select, MenuItem, FormControlLabel, Checkbox, FormGroup, Alert } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { createGame, clearError, clearSuccessMessage } from '../redux/gameSlice';
 import { useNavigate } from 'react-router-dom';
@@ -133,7 +133,7 @@ const CreateGamePage = () => {
                 navigate('/home');  
             }, 5000);
         }
-    }, [error, successMessage, dispatch, navigate]);
+    }, [error, successMessage, dispatch, navigate]);;
 
     return (
         <>
@@ -302,8 +302,18 @@ const CreateGamePage = () => {
                         <Button variant="contained" color="primary" onClick={handleSubmit} disabled={loading}>{loading ? 'Creando...' : 'Guardar'}</Button>
                     </Box>
 
-                {error && <Typography color="error" sx={{ mt: 2 }}>{error}</Typography>}
-                {successMessage && <Typography color="success" sx={{ mt: 2 }}>{successMessage}</Typography>}
+                    {error && (
+                        <Alert severity="error" onClose={() => dispatch(clearError())} sx={{ mb: 2, mt:5 }}>
+                            {error}
+                        </Alert>
+                    )}
+
+                    
+                    {successMessage && (
+                        <Alert severity="success" onClose={() => dispatch(clearSuccessMessage())} sx={{ mb: 2, mt: 5 }}>
+                            {successMessage}
+                        </Alert>
+                    )}
             </Box>
         </Box>
 

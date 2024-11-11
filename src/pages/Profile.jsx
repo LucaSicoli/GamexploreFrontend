@@ -11,6 +11,12 @@ import {
   TextField,
   InputAdornment,
   useMediaQuery,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Button
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -31,6 +37,7 @@ const Profile = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedGameId, setSelectedGameId] = useState(null); // Para almacenar el ID del juego seleccionado
   const [searchTerm, setSearchTerm] = useState('');
+  const [openDialog, setOpenDialog] = useState(false);
   const isMobile = useMediaQuery('(max-width:600px)'); // Detecta si es mobile
 
   useEffect(() => {
@@ -62,9 +69,20 @@ const Profile = () => {
     handleMenuClose(); // Cerrar el menú
   };
 
+  const handleDialogClose = () => {
+    setOpenDialog(false); // Cerrar el diálogo sin eliminar
+  };
+
+  const confirmDelete = () => {
+    setOpenDialog(true); // Abre el diálogo de confirmación
+  };
+
+
   const handleDeleteGame = () => {
+
     dispatch(deleteGame(selectedGameId)); // Eliminar el juego
     handleMenuClose(); // Cerrar el menú
+    handleDialogClose();
   };
 
   const filteredGames = games.filter((game) =>
@@ -326,7 +344,7 @@ const Profile = () => {
                         </MenuItem>
 
                         {/* Opción para eliminar el juego */}
-                        <MenuItem onClick={handleDeleteGame}>Eliminar</MenuItem>
+                        <MenuItem onClick={confirmDelete}>Eliminar</MenuItem>
                       </Menu>
 
                     </>
@@ -341,6 +359,25 @@ const Profile = () => {
             )}
           </Box>
         </Box>
+        <Dialog
+          open={openDialog}
+          onClose={handleDialogClose}
+        >
+          <DialogTitle>Confirmar eliminación</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              ¿Estás seguro de que deseas eliminar este juego? Esta acción no se puede deshacer.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleDialogClose} color="primary">
+              Cancelar
+            </Button>
+            <Button onClick={handleDeleteGame} color="secondary" autoFocus>
+              Confirmar
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </>
   );
