@@ -1,10 +1,10 @@
 // Homepage.jsx
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
-import {
-  Container, Grid, Card, CardMedia, CardContent, Typography, Box, Pagination,
-  Checkbox, FormControlLabel, Slider, Radio, RadioGroup, TextField, InputAdornment,
-  IconButton, Drawer
+import { 
+  Container, Grid, Card, CardMedia, CardContent, Typography, Box, Pagination, 
+  Checkbox, FormControlLabel, Slider, Radio, RadioGroup, TextField, InputAdornment, 
+  IconButton, Drawer, Dialog, DialogContent, DialogActions, Button, Alert , Backdrop, CircularProgress,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -18,6 +18,11 @@ const Homepage = () => {
   const [error, setError] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
+  const [openBackdrop, setOpenBackdrop] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
+  const [dialogSeverity, setDialogSeverity] = useState('success');
+
 
   const [filters, setFilters] = useState({
     category: '',
@@ -64,14 +69,29 @@ const Homepage = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error loading games:', error);
-      setError('Error loading games.');
+      setDialogMessage('Error al cargar los juegos.');
+      setDialogSeverity('error');
+      setDialogOpen(true);
       setLoading(false);
     }
   }, [buildQueryParams, token]);
 
+
   useEffect(() => {
     fetchGames();
   }, [fetchGames, page]);
+
+
+  useEffect(() => {
+    setOpenBackdrop(loading);
+  }, [loading]);
+
+
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+  };
+
 
   const handleFilterChange = (e) => {
     const { name, value, checked, type } = e.target;
@@ -251,7 +271,13 @@ const Homepage = () => {
         {/* Contenedor de juegos */}
         <Container sx={{ maxWidth: '85%', flex: 1 }}>
           {loading ? (
-            <Typography color="white">Cargando juegos...</Typography>
+            <Backdrop
+              sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
+              open={openBackdrop}
+            >
+              <CircularProgress color="inherit" />
+            </Backdrop>
+
           ) : error ? (
             <Typography color="error">{error}</Typography>
           ) : (
@@ -293,7 +319,8 @@ const Homepage = () => {
             </Grid>
           )}
           <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
-            <Pagination
+            {games.length > 0 && (
+              <Pagination
               count={22}
               page={page}
               onChange={handlePageChange}
@@ -310,6 +337,8 @@ const Homepage = () => {
                 },
               }}
             />
+            )}
+            
           </Box>
         </Container>
       </Box>
@@ -381,6 +410,19 @@ const Homepage = () => {
           </Box>
         </Box>
       </Drawer>
+      <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+  
+        <DialogContent>
+          <Alert severity={dialogSeverity} sx={{ mb: 2 }}>
+            <Typography variant="body1">{dialogMessage}</Typography>
+          </Alert>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
 
     </div>
   );

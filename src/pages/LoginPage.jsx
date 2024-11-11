@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { TextField, Button, Link, Container, Typography, Box } from '@mui/material';
+import { TextField, Button, Link, Container, Typography, Box, Snackbar, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser, clearError } from '../redux/authSlice';
-
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -12,6 +11,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayError, setDisplayError] = useState(null);
+  const [showSnackbar, setShowSnackbar] = useState(false); // Estado para controlar el Snackbar
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -22,6 +22,7 @@ const LoginPage = () => {
   useEffect(() => {
     if (error) {
       setDisplayError(error);
+      setShowSnackbar(true); // Muestra el Snackbar cuando hay un error
       const timer = setTimeout(() => {
         setDisplayError(null);
       }, 3000);
@@ -161,7 +162,8 @@ const LoginPage = () => {
 
             <Link
               onClick={() => {
-                dispatch(clearError());navigate('/register')}}
+                dispatch(clearError()); navigate('/register');
+              }}
               underline="hover"
               style={{ color: '#CACACA', cursor: 'pointer' }}
             >
@@ -171,12 +173,20 @@ const LoginPage = () => {
         </Box>
       </Container>
       <Box sx={{ minHeight: '2rem', marginTop: '1rem', textAlign: 'center' }}>
-        {displayError && (
-          <Typography color="error" style={{ width: '100%' }}>
-            {displayError}
-          </Typography>
-        )}
+        
       </Box>
+
+      {/* Snackbar para alertas de error */}
+      <Snackbar
+        open={showSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setShowSnackbar(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }} // Posición del Snackbar
+      >
+        <Alert onClose={() => setShowSnackbar(false)} severity="error" sx={{ width: '100%' }}>
+          {displayError}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

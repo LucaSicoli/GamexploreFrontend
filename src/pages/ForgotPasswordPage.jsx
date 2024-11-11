@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TextField, Button, Link, Container, Typography, Box } from '@mui/material';
+import { TextField, Button, Link, Container, Typography, Box, Snackbar, Alert } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { resetPasswordRequest, clearError } from '../redux/authSlice';
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +10,9 @@ const ForgotPasswordPage = () => {
   const { error, loading } = useSelector((state) => state.auth);
   const [email, setEmail] = useState('');
   const [emailSent, setEmailSent] = useState(false);
-  const [displayError, setDisplayError] = useState(null);
+  const [displayMessage, setDisplayMessage] = useState(null);
+  const [showSnackbar, setShowSnackbar] = useState(false); // Estado único para el Snackbar
+  const [alertType, setAlertType] = useState('success'); // Estado para el tipo de alerta (error o success)
 
   // Limpiar el error al montar la página
   useEffect(() => {
@@ -20,8 +22,10 @@ const ForgotPasswordPage = () => {
   // Manejar el error y mostrarlo por 3 segundos
   useEffect(() => {
     if (error) {
-      setDisplayError(error);
-      const timer = setTimeout(() => setDisplayError(null), 3000);
+      setDisplayMessage(error);
+      setAlertType('error');
+      setShowSnackbar(true); // Mostrar el Snackbar con error
+      const timer = setTimeout(() => setDisplayMessage(null), 3000);
       return () => clearTimeout(timer);
     }
   }, [error]);
@@ -30,6 +34,9 @@ const ForgotPasswordPage = () => {
     dispatch(resetPasswordRequest({ email })).then((response) => {
       if (!response.error) {
         setEmailSent(true);
+        setDisplayMessage('¡Enlace de restablecimiento enviado con éxito!');
+        setAlertType('success');
+        setShowSnackbar(true); // Mostrar el Snackbar de éxito
       }
     });
   };
@@ -89,11 +96,16 @@ const ForgotPasswordPage = () => {
             <Button
               variant="contained"
               fullWidth
-              style={{ marginTop: '1rem', marginBottom: '1rem', backgroundColor: '#0059ff', color: 'white' }}
+              style={{
+                marginTop: '1rem',
+                marginBottom: '1rem',
+                backgroundColor: emailSent ? '#003399' : '#0059ff',
+              
+              }}
               onClick={handleResetPasswordRequest}
               disabled={loading || emailSent}
             >
-              {emailSent ? 'Hemos enviado el enlace a tu correo' : loading ? 'Enviando...' : 'Enviar Enlace de Restablecimiento'}
+              {emailSent ? 'Enviado!' : loading ? 'Enviando...' : 'Enviar Enlace de Restablecimiento'}
             </Button>
             <Link
               component="button"
@@ -108,13 +120,18 @@ const ForgotPasswordPage = () => {
           </Box>
         </Box>
       </Container>
-      <Box sx={{ minHeight: '2rem', marginTop: '1rem', textAlign: 'center' }}>
-        {displayError && (
-          <Typography color="error" style={{ width: '100%' }}>
-            {displayError}
-          </Typography>
-        )}
-      </Box>
+
+      {/* Snackbar para alertas */}
+      <Snackbar
+        open={showSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setShowSnackbar(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setShowSnackbar(false)} severity={alertType} sx={{ width: '100%' }}>
+          {displayMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

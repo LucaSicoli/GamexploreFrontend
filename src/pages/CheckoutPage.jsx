@@ -7,6 +7,8 @@ import {
   TextField,
   Typography,
   Modal,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import Navbar from '../components/Navbar';
 import { useDispatch, useSelector } from 'react-redux';
@@ -18,8 +20,15 @@ const CheckoutPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { formData, loading, error} = useSelector((state) => state.order);
+  const [showErrorSnackbar, setShowErrorSnackbar] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    if (error) {
+      setShowErrorSnackbar(true); // Mostrar el Snackbar cuando hay un error
+    }
+  }, [error]);
 
   useEffect(() => {
     dispatch(clearOrder());
@@ -64,6 +73,7 @@ const CheckoutPage = () => {
 
   const handleCancel = () => {
     dispatch(clearError());
+    setShowErrorSnackbar(false);
     navigate('/cart');
   };
 
@@ -305,11 +315,20 @@ const CheckoutPage = () => {
           </Box>
 
           {error && (
-            <Typography color="error" sx={{ mt: 2, textAlign: 'center' }}>
+            <Snackbar
+            open={showErrorSnackbar}
+            autoHideDuration={4000}
+            onClose={() => setShowErrorSnackbar(false)}
+            anchorOrigin={{ vertical: 'top', horizontal: 'center' }} // Centrado en la parte superior
+          >
+            <Alert onClose={() => setShowErrorSnackbar(false)} severity="error" sx={{ width: '100%' }}>
               {error}
-            </Typography>
+            </Alert>
+          </Snackbar>
           )}
         </Container>
+          
+          
       </Box>
 
       {/* Modal for Thank You message */}

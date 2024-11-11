@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TextField, Button, Container, Typography, Box } from '@mui/material';
+import { TextField, Button, Container, Typography, Box, Snackbar, Alert } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { resetPassword, clearError } from '../redux/authSlice';
@@ -11,7 +11,9 @@ const ResetPasswordPage = () => {
   const { loading, error } = useSelector((state) => state.auth);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [displayError, setDisplayError] = useState(null);
+  const [displayMessage, setDisplayMessage] = useState(null);
+  const [showSnackbar, setShowSnackbar] = useState(false); // Estado para controlar el Snackbar
+  const [alertType, setAlertType] = useState('success'); // Estado para definir el tipo de alerta
   const [isDisabled, setIsDisabled] = useState(false);
   const [buttonText, setButtonText] = useState('Restablecer Contraseña');
 
@@ -22,9 +24,11 @@ const ResetPasswordPage = () => {
 
   useEffect(() => {
     if (error) {
-      setDisplayError(error);
+      setDisplayMessage(error);
+      setAlertType('error');
+      setShowSnackbar(true); // Mostrar el Snackbar de error
       const timer = setTimeout(() => {
-        setDisplayError(null);
+        setDisplayMessage(null);
       }, 3000);
       return () => clearTimeout(timer);
     }
@@ -32,14 +36,18 @@ const ResetPasswordPage = () => {
 
   const handleResetPassword = () => {
     if (newPassword !== confirmPassword) {
-      alert('Las contraseñas no coinciden');
+      setDisplayMessage('Las contraseñas no coinciden');
+      setAlertType('error');
+      setShowSnackbar(true);
       return;
     }
 
     dispatch(resetPassword({ token, newPassword })).then((response) => {
       if (!response.error) {
         setIsDisabled(true);
-        setButtonText('¡Contraseña restablecida exitosamente!');
+        setDisplayMessage('¡Contraseña restablecida exitosamente!');
+        setAlertType('success');
+        setShowSnackbar(true);
         setTimeout(() => {
           navigate('/login');
         }, 5000);
@@ -178,13 +186,18 @@ const ResetPasswordPage = () => {
           </Box>
         </Box>
       </Container>
-      <Box sx={{ minHeight: '2rem', marginTop: '1rem', textAlign: 'center' }}>
-        {displayError && (
-          <Typography color="error" style={{ width: '100%', fontFamily: 'Orbitron, sans-serif' }}>
-            {displayError}
-          </Typography>
-        )}
-      </Box>
+
+      {/* Snackbar para alertas */}
+      <Snackbar
+        open={showSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setShowSnackbar(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setShowSnackbar(false)} severity={alertType} sx={{ width: '100%' }}>
+          {displayMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

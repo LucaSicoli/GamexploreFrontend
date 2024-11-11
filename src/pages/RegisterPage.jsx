@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { TextField, Button, Link, Container, Typography, Box, MenuItem } from '@mui/material';
+import { TextField, Button, Link, Container, Typography, Box, MenuItem, Snackbar, Alert } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser, clearError } from '../redux/authSlice';
@@ -11,15 +14,21 @@ const RegisterPage = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [password2, setPassword2] = useState('');
   const [role, setRole] = useState('gamer');
   const [logo, setLogo] = useState(null);
   const [dateOfBirth, setDateOfBirth] = useState('');
-  const [description, setDescription] = useState(''); // Estado para la descripción de la empresa
-  const [displayError, setDisplayError] = useState(null);
+  const [description, setDescription] = useState('');
+  const [displayMessage, setDisplayMessage] = useState(null);
+  const [showSnackbar, setShowSnackbar] = useState(false);
+  const [alertType, setAlertType] = useState('success'); // Tipo de alerta (error o success)
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   useEffect(() => {
     if (registrationSuccess) {
+      setDisplayMessage('Usuario creado exitosamente. Rediriendo al Login...');
+      setAlertType('success');
+      setShowSnackbar(true);
       setTimeout(() => {
         navigate('/');
       }, 3000); // Redirigir después de 3 segundos
@@ -28,9 +37,11 @@ const RegisterPage = () => {
 
   useEffect(() => {
     if (error) {
-      setDisplayError(error);
+      setDisplayMessage(error);
+      setAlertType('error');
+      setShowSnackbar(true);
       const timer = setTimeout(() => {
-        setDisplayError(null);
+        setDisplayMessage(null);
       }, 3000);
       return () => clearTimeout(timer);
     }
@@ -41,6 +52,13 @@ const RegisterPage = () => {
   }, [dispatch]);
 
   const handleRegister = () => {
+    if (password !== password2) {
+      setDisplayMessage('Las contraseñas no coinciden');
+      setAlertType('error');
+      setShowSnackbar(true);
+      return;
+    };
+
     const formData = new FormData();
     formData.append('name', name);
     formData.append('email', email);
@@ -53,7 +71,7 @@ const RegisterPage = () => {
     }
 
     if (role === 'empresa' && description) {
-      formData.append('description', description); // Agregar descripción si el rol es empresa
+      formData.append('description', description);
     }
 
     dispatch(registerUser(formData))
@@ -188,14 +206,14 @@ const RegisterPage = () => {
               }}
             />
             <TextField
-              label="Fecha de Nacimiento"
-              type="date"
+              label="Repetir contraseña"
+              type="password"
               variant="outlined"
-              value={dateOfBirth}
-              onChange={(e) => setDateOfBirth(e.target.value)}
+              value={password2}
+              onChange={(e) => setPassword2(e.target.value)}
               fullWidth
               margin="normal"
-              InputLabelProps={{ shrink: true, style: { color: '#FFFFFF' } }}
+              InputLabelProps={{ style: { color: '#FFFFFF' } }}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   '& fieldset': {
@@ -214,6 +232,36 @@ const RegisterPage = () => {
                 },
               }}
             />
+            
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
+                label="Fecha de Nacimiento"
+                value={dateOfBirth}
+                onChange={(newValue) => setDateOfBirth(newValue)}
+                sx={{
+                  width: '100%',          
+                  marginTop: '15px', 
+                  marginBottom: '10px',        
+                  '& .MuiInputBase-root': {
+                    color: '#FFFFFF',     
+                    borderRadius: '4px',
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: '#FFFFFF',     
+                  },
+                  '& .MuiSvgIcon-root': {
+                    color: '#FFFFFF',       
+                  },
+                  '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#FFFFFF',
+                  },
+                }}
+              />
+            </LocalizationProvider>
+
+
+
+
             <TextField
               select
               label="Role"
@@ -330,18 +378,18 @@ const RegisterPage = () => {
           </Box>
         </Box>
       </Container>
-      <Box sx={{ minHeight: '2rem', marginTop: '1rem', textAlign: 'center' }}>
-        {registrationSuccess && (
-          <Typography color="success" style={{ width: '100%', color: 'green' }}>
-            Usuario creado exitosamente.
-          </Typography>
-        )}
-        {displayError && (
-          <Typography color="error" style={{ width: '100%' }}>
-            {displayError}
-          </Typography>
-        )}
-      </Box>
+
+      {/* Snackbar para mostrar mensajes de éxito o error */}
+      <Snackbar
+        open={showSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setShowSnackbar(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setShowSnackbar(false)} severity={alertType} sx={{ width: '100%' }}>
+          {displayMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
