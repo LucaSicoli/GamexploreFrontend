@@ -252,11 +252,19 @@ const gameSlice = createSlice({
             })
             .addCase(togglePublishGame.fulfilled, (state, action) => {
                 state.loading = false;
-                const { gameId, isPublished, publishedDate } = action.payload;
+                const updatedGame = action.payload;
                 state.companyGames = state.companyGames.map(game =>
-                    game._id === gameId ? { ...game, isPublished, publishedDate } : game
+                    game._id === updatedGame._id
+                        ? {
+                            ...game,
+                            isPublished: updatedGame.isPublished,
+                            publishedDate: updatedGame.isPublished ? updatedGame.publishedDate : game.publishedDate, // Mantiene la fecha original de publicación al despublicar
+                            unpublishedDate: !updatedGame.isPublished ? new Date().toISOString() : null // Agrega la fecha de despublicación si no está publicado
+                        }
+                        : game
                 );
             })
+            
             .addCase(togglePublishGame.rejected, (state, action) => {
                 state.loading = false; 
                 state.error = action.payload?.message || 'Error toggling publish status.'; 

@@ -219,12 +219,12 @@ const Profile = () => {
                         }} />
                       </Typography>
                       <Typography variant="body2" color="white">
-  {game.isPublished
-    ? `Publicado el ${formatPublishedDate(game.publishedDate)}`
-    : game.publishedDate
-      ? `Despublicado el ${formatPublishedDate(game.publishedDate)}`
-      : 'No publicado'}
-</Typography>
+                        {game.isPublished
+                          ? `Publicado el ${formatPublishedDate(game.publishedDate)}`
+                          : game.publishedDate
+                            ? `Despublicado el ${formatPublishedDate(game.publishedDate)}`
+                            : 'No publicado'}
+                      </Typography>
 
                       <Box display="flex" justifyContent="center" alignItems="center" gap="0.5rem" mt={0.5}>
                         <Rating value={game.rating || 0} readOnly precision={0.1} />
@@ -287,8 +287,13 @@ const Profile = () => {
                             }} />
                           </Typography>
                           <Typography variant="body2" color="white">
-                            {game.isPublished ? 'Publicado' : 'Despublicado'} el {formatPublishedDate(game.publishedDate)}
-                          </Typography>
+    {game.isPublished
+        ? `Publicado el ${formatPublishedDate(game.publishedDate)}`
+        : game.publishedDate
+            ? `Despublicado el ${formatPublishedDate(game.unpublishedDate || new Date())}`
+            : `Creado el ${formatPublishedDate(game.createdAt)}`}
+</Typography>
+
 
                           <Box display={`flex`} alignItems={`center`} gap={`0.5rem`} mt={0.5}>
                             <Rating value={game.rating || `0`} readOnly precision={`0.1`} />
