@@ -155,6 +155,7 @@ const gameSlice = createSlice({
         loading: false,
         error: null,
         successMessage: null,
+        isPublished: false,
     },
     reducers: {
         clearError: (state) => {
@@ -252,10 +253,9 @@ const gameSlice = createSlice({
             .addCase(togglePublishGame.fulfilled, (state, action) => {
                 state.loading = false; 
                 const { gameId, isPublished } = action.payload; 
-                const game = state.companyGames.find((g) => g._id === gameId); 
-                if (game) {
-                    game.isPublished = isPublished; 
-                }
+                state.companyGames = state.companyGames.map(game =>
+                    game._id === gameId ? { ...game, isPublished } : game
+                );
             })
             .addCase(togglePublishGame.rejected, (state, action) => {
                 state.loading = false; 

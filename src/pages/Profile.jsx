@@ -21,8 +21,7 @@ import AssessmentIcon from '@mui/icons-material/Assessment';
 import SearchIcon from '@mui/icons-material/Search';
 import { useNavigate } from 'react-router-dom'; // Importar useNavigate
 import { fetchUserGames } from '../redux/userSlice';
-import { getWishlist } from '../redux/wishlistSlice';
-import { incrementGameViews, togglePublishGame, deleteGame } from '../redux/gameSlice';
+import {togglePublishGame, deleteGame } from '../redux/gameSlice';
 import Navbar from '../components/Navbar';
 
 const Profile = () => {
@@ -36,7 +35,6 @@ const Profile = () => {
 
   useEffect(() => {
     dispatch(fetchUserGames());
-    dispatch(getWishlist());
   }, [dispatch]);
 
   const handleMenuClick = (event, gameId) => {
@@ -53,9 +51,6 @@ const Profile = () => {
     setSearchTerm(event.target.value.toLowerCase());
   };
 
-  const handleIncrementViews = (gameId) => {
-    dispatch(incrementGameViews(gameId));
-  };
 
   const handleEditGame = () => {
     navigate(`/edit-game/${selectedGameId}`); // Redirigir a la página de edición
@@ -169,7 +164,6 @@ const Profile = () => {
                     color: 'white',
                     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
                   }}
-                  onClick={() => handleIncrementViews(game._id)}
                 >
                   {/* Imagen del juego */}
                   <img
@@ -242,6 +236,7 @@ const Profile = () => {
                         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
                           {/* Opciones del menú */}
                           <MenuItem onClick={handleEditGame}>Edit</MenuItem>
+                          {/* Cambiar texto según estado de publicación */}
                           <MenuItem onClick={handleTogglePublish}>
                             {game.isPublished ? `Despublicar` : `Publicar`}
                           </MenuItem>
@@ -325,8 +320,9 @@ const Profile = () => {
                       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
                         {/* Aquí puedes agregar las opciones del menú */}
                         <MenuItem onClick={handleEditGame}>Edit</MenuItem>
+                        {/* Cambiar texto según estado de publicación */}
                         <MenuItem onClick={handleTogglePublish}>
-                          {game.isPublished ? `Despublicar` : `Publicar`}
+                            {game.isPublished ? `Despublicar` : `Publicar`}
                         </MenuItem>
 
                         {/* Opción para eliminar el juego */}
