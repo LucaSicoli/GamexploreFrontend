@@ -1,4 +1,3 @@
-// src/pages/Profile.jsx
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -172,44 +171,50 @@ const Profile = () => {
                         {game.name}
                       </Typography>
                       <Typography variant="body2" color="white" textAlign="center">
-                        {game.isPublished ? 'Publicado' : 'Despublicado'} el {game.publishedDate || 'N/A'}
+                        {game.isPublished ? `Publicado` : `Despublicado`} el {game.publishedDate || `N/A`}
                       </Typography>
                       <Box display="flex" justifyContent="center" alignItems="center" gap="0.5rem" mt={0.5}>
                         <Rating value={game.rating || 0} readOnly precision={0.1} />
                         <Typography variant="body2">
-                          {game.rating?.toFixed(1) || 0} ({game.ratingCount || 0} reseñas)
+                          {game.rating?.toFixed(1) || `0`} ({game.ratingCount || `0`} reseñas)
                         </Typography>
                       </Box>
                       <Box display="flex" justifyContent="space-around" width="100%" mt={1}>
                         <Box display="flex" alignItems="center" gap="0.3rem">
                           <VisibilityIcon fontSize="small" />
-                          <Typography variant="body2">{game.views || 0}</Typography>
+                          <Typography variant="body2">{game.views || `0`}</Typography>
                         </Box>
                         <Box display="flex" alignItems="center" gap="0.3rem">
                           <FavoriteIcon fontSize="small" />
-                          <Typography variant="body2">{game.wishlistCount || 0}</Typography>
+                          <Typography variant="body2">{game.wishlistCount || `0`}</Typography>
                         </Box>
                         <Box display="flex" alignItems="center" gap="0.3rem">
                           <ShoppingCartIcon fontSize="small" />
-                          <Typography variant="body2">{game.purchases || 0}</Typography>
+                          <Typography variant="body2">{game.purchases || `0`}</Typography>
                         </Box>
+                        {/* Tasa de conversión */}
                         <Box display="flex" alignItems="center" gap="0.3rem">
                           <TrendingUpIcon fontSize="small" />
-                          <Typography variant="body2">{game.conversionRate || 0}%</Typography>
+                          <Typography variant="body2">
+                            {(game.purchases && game.views) 
+                              ? `${((game.purchases / game.views) * 100).toFixed(2)}%`
+                              : `N/A`}
+                          </Typography>
                         </Box>
                       </Box>
+                      {/* Menú de opciones */}
                       <Box display="flex" justifyContent="center" mt={1}>
                         <IconButton
                           aria-label="more"
                           onClick={handleMenuClick}
-                          sx={{ color: 'white' }}
+                          sx={{ color:`white` }}
                         >
                           <MoreVertIcon />
                         </IconButton>
                         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
                           <MenuItem onClick={handleMenuClose}>Edit</MenuItem>
                           <MenuItem onClick={handleMenuClose}>
-                            {game.isPublished ? 'Despublicar' : 'Publicar'}
+                            {game.isPublished ? `Despublicar` : `Publicar`}
                           </MenuItem>
                           <MenuItem onClick={handleMenuClose}>Eliminar</MenuItem>
                         </Menu>
@@ -218,60 +223,84 @@ const Profile = () => {
                   ) : (
                     // Contenido en escritorio
                     <>
-                      <Box display="flex" alignItems="center" gap="1.5rem" flexWrap="wrap">
+                      <Box display={`flex`} alignItems={`center`} gap={`1.5rem`} flexWrap={`wrap`}>
                         <Box>
-                          <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1.2rem' }}>
+                          <Typography variant={`h6`} sx={{ fontWeight:`bold`, fontSize:`1.2rem` }}>
                             {game.name}
                           </Typography>
-                          <Typography variant="body2" color="white">
-                            {game.isPublished ? 'Publicado' : 'Despublicado'} el {game.publishedDate || 'N/A'}
+                          <Typography variant={`body2`} color={`white`}>
+                            {game.isPublished ? `Publicado` : `Despublicado`} el {game.publishedDate || `N/A`}
                           </Typography>
-                          <Box display="flex" alignItems="center" gap="0.5rem" mt={0.5}>
-                            <Rating value={game.rating || 0} readOnly precision={0.1} />
-                            <Typography variant="body2">
-                              {game.rating?.toFixed(1) || 0} ({game.ratingCount || 0} reseñas)
+                          <Box display={`flex`} alignItems={`center`} gap={`0.5rem`} mt={0.5}>
+                            <Rating value={game.rating || `0`} readOnly precision={`0.1`} />
+                            <Typography variant={`body2`}>
+                              {game.rating?.toFixed(1) || `0`} ({game.ratingCount || `0`} reseñas)
                             </Typography>
                           </Box>
                         </Box>
                       </Box>
-                      <Box display="flex" alignItems="center" gap="2rem" flexWrap="wrap">
-                        <Box display="flex" alignItems="center" gap="0.3rem">
-                          <VisibilityIcon fontSize="small" />
-                          <Typography variant="body2">{game.views || 0}</Typography>
+
+                      {/* Información adicional */}
+                      <Box display={`flex`} alignItems={`center`} gap={`2rem`} flexWrap={`wrap`}>
+                        {/* Visualizaciones */}
+                        <Box display={`flex`} alignItems={`center`} gap={`0.3rem`}>
+                          <VisibilityIcon fontSize={`small`} />
+                          <Typography variant={`body2`}>{game.views || `0`}</Typography>
                         </Box>
-                        <Box display="flex" alignItems="center" gap="0.3rem">
-                          <FavoriteIcon fontSize="small" />
-                          <Typography variant="body2">{game.wishlistCount || 0}</Typography>
+
+                        {/* Wishlist Count */}
+                        <Box display={`flex`} alignItems={`center`} gap={`0.3rem`}>
+                          <FavoriteIcon fontSize={`small`} />
+                          <Typography variant={`body2`}>{game.wishlistCount || `0`}</Typography>
                         </Box>
-                        <Box display="flex" alignItems="center" gap="0.3rem">
-                          <ShoppingCartIcon fontSize="small" />
-                          <Typography variant="body2">{game.purchases || 0}</Typography>
+
+                        {/* Purchases Count */}
+                        <Box display={`flex`} alignItems={`center`} gap={`0.3rem`}>
+                          <ShoppingCartIcon fontSize={`small`} />
+                          <Typography variant={`body2`}>{game.purchases || `0`}</Typography>
                         </Box>
-                        <Box display="flex" alignItems="center" gap="0.3rem">
-                          <TrendingUpIcon fontSize="small" />
-                          <Typography variant="body2">{game.conversionRate || 0}%</Typography>
+
+                        {/* Tasa de conversión */}
+                        <Box display={`flex`} alignItems={`center`} gap={`0.3rem`}>
+                          <TrendingUpIcon fontSize={`small`} />
+                          {/* Cálculo correcto de la tasa de conversión */}
+                          <Typography variant={`body2`}>
+                            {(game.purchases && game.views) 
+                              ? `${((game.purchases / game.views) * 100).toFixed(2)}%`
+                              : `N/A`}
+                          </Typography>
                         </Box>
-                        <IconButton
-                          aria-label="more"
-                          onClick={handleMenuClick}
-                          sx={{ color: 'white' }}
-                        >
-                          <MoreVertIcon />
-                        </IconButton>
-                        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-                          <MenuItem onClick={handleMenuClose}>Edit</MenuItem>
-                          <MenuItem onClick={handleMenuClose}>
-                            {game.isPublished ? 'Despublicar' : 'Publicar'}
-                          </MenuItem>
-                          <MenuItem onClick={handleMenuClose}>Eliminar</MenuItem>
-                        </Menu>
+
                       </Box>
+
+                      {/* Menú de opciones */}
+                      <IconButton
+                        aria-label={`more`}
+                        onClick={handleMenuClick}
+                        sx={{ color:`white` }}
+                      >
+                        <MoreVertIcon />
+                      </IconButton>
+
+                      {/* Opciones del menú */}
+                      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+                        {/* Aquí puedes agregar las opciones del menú */}
+                        <MenuItem onClick={handleMenuClose}>Edit</MenuItem>
+                        <MenuItem onClick={handleMenuClose}>
+                          {game.isPublished ? `Despublicar` : `Publicar`}
+                        </MenuItem>
+
+                        {/* Opción para eliminar el juego */}
+                        <MenuItem onClick={handleMenuClose}>Eliminar</MenuItem>
+                      </Menu>
+
                     </>
                   )}
                 </Box>
               ))
             ) : (
-              <Typography sx={{ color: 'white', textAlign: 'center', marginTop: '2rem' }}>
+              // Mensaje si no hay juegos encontrados
+              <Typography sx={{ color:`white`, textAlign:`center`, marginTop:`2rem` }}>
                 No games found.
               </Typography>
             )}

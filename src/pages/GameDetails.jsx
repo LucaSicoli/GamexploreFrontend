@@ -29,16 +29,18 @@ const GameDetails = () => {
     const fetchGameDetails = async () => {
       try {
         const token = localStorage.getItem('token');
-        
+
+        // Incrementar visualizaciones al acceder a los detalles del juego
         await axios.put(`${process.env.REACT_APP_API_URL}/games/${gameId}/views`, {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
+        // Obtener los detalles del juego
         const response = await axios.get(
           `${process.env.REACT_APP_API_URL}/games/${gameId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        
+
         setGame(response.data);
       } catch (err) {
         setError('Error al cargar los detalles del juego');
