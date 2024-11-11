@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import {
-  Container, Grid, Card, CardMedia, CardContent, Typography, Box, Pagination,
+  Container, Grid, Card, CardMedia, CardContent, Typography, Box,
   Checkbox, FormControlLabel, Slider, Radio, RadioGroup, TextField, InputAdornment,
   IconButton, Drawer
 } from '@mui/material';
@@ -10,10 +10,12 @@ import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
+import Rating from '@mui/material/Rating';
+import StarBorderIcon from '@mui/icons-material/StarBorder'
 
 const Homepage = () => {
   const [games, setGames] = useState([]);
-  const [page, setPage] = useState(1);
+  const [page] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -24,7 +26,11 @@ const Homepage = () => {
     platform: '',
     maxPrice: 100,
     search: '',
+    players: '',
+    rating: '',
+    language: ''
   });
+
 
   const token = localStorage.getItem('token');
 
@@ -38,12 +44,15 @@ const Homepage = () => {
     const params = new URLSearchParams();
     if (filters.category) params.append('category', filters.category);
     if (filters.platform) params.append('platform', filters.platform);
-    if (filters.maxPrice >= 0) {
-      params.append('maxPrice', filters.maxPrice);
-    }
+    if (filters.maxPrice >= 0) params.append('maxPrice', filters.maxPrice);
     if (filters.search) params.append('search', filters.search);
+    if (filters.language) params.append('language', filters.language);
+    if (filters.players) params.append('players', filters.players);
+    if (filters.rating) params.append('rating', filters.rating);
+    params.append('isPublished', 'true'); // Filtra solo juegos publicados
     return params.toString();
   }, [filters]);
+
 
   const handleSearchChange = (e) => {
     setFilters((prevFilters) => ({ ...prevFilters, search: e.target.value }));
@@ -86,9 +95,6 @@ const Homepage = () => {
     setFilters((prevFilters) => ({ ...prevFilters, maxPrice: newValue === 0 ? 0 : newValue }));
   };
 
-  const handlePageChange = (event, value) => {
-    setPage(value);
-  };
 
   const toggleDrawer = (open) => () => {
     setDrawerOpen(open);
@@ -149,13 +155,12 @@ const Homepage = () => {
           }}
         />
 
-        {/* Contenedor para el texto "Filtrar" y el botón de filtros en mobile */}
         <Box
           sx={{
             display: { xs: 'flex', md: 'none' },
             alignItems: 'center',
             marginTop: '1rem',
-            gap: '0.5rem', // Espacio entre el texto y el icono
+            gap: '0.5rem',
           }}
         >
           <Typography sx={{ color: 'white' }}>Filtrar</Typography>
@@ -165,7 +170,6 @@ const Homepage = () => {
         </Box>
       </Box>
 
-      {/* linea divisoria blanca */}
       <Box
         sx={{
           width: { xs: '90%', md: '75%' },
@@ -178,8 +182,6 @@ const Homepage = () => {
         }}
       />
 
-      {/* sidebar */}
-
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: '5px' }}>
         <Box
           sx={{
@@ -191,11 +193,12 @@ const Homepage = () => {
             marginLeft: '2rem',
             color: 'white',
             border: '2px solid grey',
-            height: '620px',
+            height: '1100px',
             flexDirection: 'column',
-            gap: '2rem', // Más espacio entre las secciones principales
+            gap: '2rem',
           }}
         >
+          {/* Filtros en la vista de escritorio */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <Typography variant="subtitle2">Categoría</Typography>
             {['Aventura', 'Acción', 'RPG', 'MOBA', 'FPS', 'Estrategia', 'Free To Play'].map((category) => (
@@ -209,10 +212,10 @@ const Homepage = () => {
 
           <Box
             sx={{
-              marginTop: '1rem', // Espacio adicional entre las secciones
+              marginTop: '1rem',
               display: 'flex',
-              flexDirection: 'column',  // Menor espacio entre el título y la barra
-              marginBottom: '1rem', // Espacio inferior entre esta sección y la siguiente
+              flexDirection: 'column',
+              marginBottom: '1rem',
             }}
           >
             <Typography variant="subtitle2">Precio Máximo</Typography>
@@ -224,10 +227,9 @@ const Homepage = () => {
               valueLabelDisplay="auto"
               valueLabelFormat={(value) => (value === 0 ? "Free" : `$${value}`)}
               sx={{
-                color: 'white', // Color blanco para el Slider
+                color: 'white',
               }}
             />
-
           </Box>
 
           <Box
@@ -235,9 +237,23 @@ const Homepage = () => {
               display: 'flex',
               flexDirection: 'column',
               gap: '0.5rem',
-              marginTop: '1rem', // Espacio adicional entre las secciones
+              marginTop: '1rem',
             }}
           >
+            <Typography variant="subtitle2">Calificación</Typography>
+            <Rating
+              name="rating"
+              value={filters.rating}
+              onChange={(event, newValue) => setFilters((prevFilters) => ({ ...prevFilters, rating: newValue }))}
+              precision={0.5}
+              sx={{
+                color: '#ffc107', // Color de las estrellas seleccionadas
+              }}
+              emptyIcon={<StarBorderIcon style={{ color: 'white' }} />} // Borde blanco para estrellas no seleccionadas
+            />
+          </Box>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
             <Typography variant="subtitle2">Sistema Operativo</Typography>
             <RadioGroup name="platform" onChange={handleFilterChange}>
               {['Windows', 'Mac', 'Linux'].map((platform) => (
@@ -245,8 +261,30 @@ const Homepage = () => {
               ))}
             </RadioGroup>
           </Box>
-        </Box>
 
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+            <Typography variant="subtitle2">Idioma</Typography>
+            {['Inglés', 'Español', 'Francés', 'Alemán'].map((language) => (
+              <FormControlLabel
+                key={language}
+                control={<Checkbox name="language" value={language} onChange={handleFilterChange} />}
+                label={language}
+              />
+            ))}
+          </Box>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+            <Typography variant="subtitle2">Cantidad de Jugadores</Typography>
+            {['Single-player', 'Multi-player'].map((players) => (
+              <FormControlLabel
+                key={players}
+                control={<Checkbox name="players" value={players} onChange={handleFilterChange} />}
+                label={players}
+              />
+            ))}
+          </Box>
+
+        </Box>
 
         <Container sx={{ maxWidth: '85%' }}>
           {loading ? (
@@ -266,7 +304,7 @@ const Homepage = () => {
                       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
                       cursor: 'pointer',
                     }}
-                    onClick={() => handleCardClick(game._id)} // Redirige al hacer cli
+                    onClick={() => handleCardClick(game._id)}
                   >
                     <CardMedia
                       component="img"
@@ -291,25 +329,6 @@ const Homepage = () => {
               ))}
             </Grid>
           )}
-          <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
-            <Pagination
-              count={22}
-              page={page}
-              onChange={handlePageChange}
-              sx={{
-                '& .MuiPaginationItem-root': {
-                  color: 'white', // Cambia el color del texto a blanco
-                },
-                '& .Mui-selected': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.2)', // Fondo transparente para el item seleccionado
-                  color: 'white', // Color del número seleccionado
-                },
-                '& .MuiPaginationItem-root:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)', // Fondo al pasar el cursor
-                },
-              }}
-            />
-          </Box>
         </Container>
       </Box>
 
@@ -319,10 +338,11 @@ const Homepage = () => {
         onClose={toggleDrawer(false)}
         sx={{
           '& .MuiDrawer-paper': {
-            backgroundColor: '#1e1e1e', // Fondo oscuro para el Drawer
-            color: 'white', // Color blanco para el texto
-            width: 250, // Ancho del Drawer
+            backgroundColor: '#1e1e1e',
+            color: 'white',
+            width: 250,
             padding: '1rem',
+            paddingBottom: '2rem',
           },
         }}
       >
@@ -339,7 +359,7 @@ const Homepage = () => {
                     name="category"
                     value={category}
                     onChange={handleFilterChange}
-                    sx={{ color: 'white' }} // Checkbox blanco
+                    sx={{ color: 'white' }}
                   />
                 }
                 label={category}
@@ -356,7 +376,7 @@ const Homepage = () => {
               max={100}
               valueLabelDisplay="auto"
               sx={{
-                color: 'white', // Color blanco para el Slider
+                color: 'white',
               }}
             />
           </Box>
@@ -367,20 +387,50 @@ const Homepage = () => {
               {['Windows', 'Mac', 'Linux'].map((platform) => (
                 <FormControlLabel
                   key={platform}
-                  control={
-                    <Radio
-                      value={platform}
-                      sx={{ color: 'white' }} // Radio Button blanco
-                    />
-                  }
+                  control={<Radio value={platform} sx={{ color: 'white' }} />}
                   label={platform}
                 />
               ))}
             </RadioGroup>
           </Box>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <Typography variant="subtitle2">Idioma</Typography>
+            {['Inglés', 'Español', 'Francés', 'Alemán'].map((language) => (
+              <FormControlLabel
+                key={language}
+                control={<Checkbox name="language" value={language} onChange={handleFilterChange} />}
+                label={language}
+              />
+            ))}
+          </Box>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <Typography variant="subtitle2">Cantidad de Jugadores</Typography>
+            {['Single-player', 'Multi-player'].map((players) => (
+              <FormControlLabel
+                key={players}
+                control={<Checkbox name="players" value={players} onChange={handleFilterChange} />}
+                label={players}
+              />
+            ))}
+          </Box>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+            <Typography variant="subtitle2">Calificación</Typography>
+            <Rating
+              name="rating"
+              value={filters.rating}
+              onChange={(event, newValue) => setFilters((prevFilters) => ({ ...prevFilters, rating: newValue }))}
+              precision={0.5}
+              sx={{
+                color: '#ffc107', // Color de las estrellas seleccionadas
+              }}
+              emptyIcon={<StarBorderIcon style={{ color: 'white' }} />} // Borde blanco para estrellas no seleccionadas
+            />
+          </Box>
         </Box>
       </Drawer>
-
     </div>
   );
 };
