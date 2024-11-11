@@ -16,7 +16,9 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Button
+  Button,
+  Backdrop,
+  CircularProgress,
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -38,7 +40,13 @@ const Profile = () => {
   const [selectedGameId, setSelectedGameId] = useState(null); // Para almacenar el ID del juego seleccionado
   const [searchTerm, setSearchTerm] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
+  const [openBackdrop, setOpenBackdrop] = useState(false);
   const isMobile = useMediaQuery('(max-width:600px)'); // Detecta si es mobile
+
+  useEffect(() => {
+    setOpenBackdrop(loading);
+  }, [loading]);
+
 
   useEffect(() => {
     dispatch(fetchUserGames());
@@ -93,9 +101,6 @@ const Profile = () => {
   const filteredGames = games.filter((game) =>
     game.name.toLowerCase().includes(searchTerm)
   );
-
-  if (loading) return <Typography>Loading...</Typography>;
-  if (error) return <Typography>Error: {error}</Typography>;
 
   return (
     <>
@@ -389,6 +394,16 @@ const Profile = () => {
           </DialogActions>
         </Dialog>
       </Box>
+      {loading ? (
+            <Backdrop
+              sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
+              open={openBackdrop}
+            >
+              <CircularProgress color="inherit" />
+            </Backdrop>
+          ) : error ? (
+            <Typography color="error">{error}</Typography>
+          ) : null}
     </>
   );
 };
