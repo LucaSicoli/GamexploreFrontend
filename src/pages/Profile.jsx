@@ -262,13 +262,18 @@ const Profile = () => {
                         >
                           <MoreVertIcon />
                         </IconButton>
-                        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-                          <MenuItem onClick={handleEditGame}>Edit</MenuItem>
-                          <MenuItem onClick={handleTogglePublish}>
-                            {game.isPublished ? `Despublicar` : `Publicar`}
-                          </MenuItem>
-                          <MenuItem onClick={handleDeleteGame}>Eliminar</MenuItem>
-                        </Menu>
+                        <Menu
+                        anchorEl={anchorEl && anchorEl[game._id]} // Controla el menú específico de cada juego
+                        open={Boolean(anchorEl && anchorEl[game._id]) && selectedGameId === game._id}
+                        onClose={handleMenuClose}
+                      >
+                        <MenuItem onClick={handleEditGame}>Edit</MenuItem>
+                        <MenuItem onClick={handleTogglePublish}>
+                          {game.isPublished ? 'Despublicar' : 'Publicar'}
+                        </MenuItem>
+                        <MenuItem onClick={handleDeleteGame}>Eliminar</MenuItem>
+                      </Menu>
+
                       </Box>
                     </>
                   ) : (
