@@ -35,10 +35,12 @@ const Homepage = () => {
   const token = localStorage.getItem('token');
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
     if (!token) {
-      navigate('/login');
+      navigate('/login'); // Redirige al login si no hay token
     }
-  }, [token, navigate]);
+  }, [navigate]);
+  
 
   const buildQueryParams = useCallback(() => {
     const params = new URLSearchParams();

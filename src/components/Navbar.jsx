@@ -24,6 +24,15 @@ const Navbar = () => {
     }
   }, [dispatch, user]);
 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      dispatch(logout()); // Limpia el estado global
+      navigate('/login'); // Redirige al login
+    }
+  }, [dispatch, navigate]);
+  
+
   const handleProfileClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
